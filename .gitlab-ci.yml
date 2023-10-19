@@ -1,28 +1,7 @@
-# This reusable CI script is licensed under the MIT license.
-# See the complete license text at the end.
-
 ### Configuration section
-
-# The versions of the compiler to test the project against.
-.build-matrix:
-  parallel:
-    # https://docs.gitlab.com/ee/ci/yaml/README.html#parallel-matrix-jobs
-    matrix:
-    # - OCAML_COMPILER: "4.00.1"
-    # - OCAML_COMPILER: "4.01.0"
-    # - OCAML_COMPILER: "4.02.1"
-    # - OCAML_COMPILER: "4.02.3"
-    # - OCAML_COMPILER: "4.03.0"
-    # - OCAML_COMPILER: "4.04.2"
-    # - OCAML_COMPILER: "4.05.0"
-    # - OCAML_COMPILER: "4.06.1"
-    # - OCAML_COMPILER: "4.07.1"
-    # - OCAML_COMPILER: "4.08.1"
-    # - OCAML_COMPILER: "4.09.1"
-    # - OCAML_COMPILER: "4.10.0"
-    - OCAML_COMPILER: "4.11.1"
-
 variables:
+  OCAML_COMPILER: "4.11.1"
+
   CLEAN_OPAM_CACHE: "false"
   CLEAN_DUNE_CACHE: "false"
   # If CLEAN_OPAM_CACHE is set to "true", the opam switch from previous CI jobs
@@ -86,8 +65,6 @@ variables:
 
 stages:
   - build        # build the project and run its tests
-  - deploy       # deploys a website to Pages from the 'pages' branch
-
 
 ### Build stage
 #
@@ -95,8 +72,6 @@ stages:
 
 build:
   stage: build
-
-  extends: .build-matrix # defines OCAML_COMPILER
 
   variables:
     ARTIFACTS: "artifacts/$OCAML_COMPILER"
@@ -111,14 +86,7 @@ build:
     paths:
       - artifacts/$OCAML_COMPILER
 
-  # run this job only if a 'dune-project' file exists;
-  # (In particular, this will not run in your "pages" branch
-  # if it does not itself use Dune.)
-  rules:
-    # https://docs.gitlab.com/ee/ci/yaml/#rules
-    - exists:
-        - dune-project
-
+ 
   # This CI script uses a local switch, so we don't need
   # a docker image with a pre-installed OCaml version, just opam.
   # See https://hub.docker.com/r/ocaml/opam/ for other images.
@@ -190,6 +158,13 @@ build:
     - if [ "$DUNE_DOC_TARGETS" != "" ]; then dune build $DUNE_FLAGS $DUNE_DOC_TARGETS; else echo "skipped (DUNE_DOC_TARGETS is empty)"; fi
     - echo -e "section_end:`date +%s`:project_doc\r\e[0K"
 
+    - echo -e "section_start:`date +%s`:project_format\r\e[0K check project format"
+    - echo -e "Installing ocamlformat" && opam install ocamlformat --yes
+    - if [ "$DUNE_DOC_TARGETS" != "" ];
+      then dune build @fmt $DUNE_BUILD_TARGETS $DUNE_TEST_TARGETS $DUNE_FLAGS --auto-promote || (echo "The code is not properly formatted" && exit 1);
+      else echo "skipped ( AUNE_BUILD_TARGETS or DUNE_TEST_TARGETS is empty)"; fi
+    - echo -e "section_end:`date +%s`:project_format\r\e[0K"
+
     - echo -e "section_start:`date +%s`:artifacts\r\e[0K populating the artifacts"
     - mkdir -p $ARTIFACTS
     - >
@@ -244,87 +219,6 @@ build:
 # way.)
 #
 # This is why this CI script does everything in a single 'build' step.
-
-
-### Deploy stage
-#
-# pushing some project artifacts to the web.
-
-# The "pages" rule uploads a custom website whenever someones
-# pushes a commit to the "pages" branch of the repository.
-#
-# The content of the website is the sub-filesystem
-# located in the "docs/" subdirectory of the branch index.
-#
-# This behavior emulates the way per-repository Github pages work.
-#
-# If the repository is at
-#   https://gitlab.com/<group>/<project>,
-# then the published website will be at
-#   https://<group>.gitlab.io/<project>
-# In general see
-#   https://docs.gitlab.com/ee/user/project/pages/getting_started_part_one.html#gitlab-pages-default-domain-names
-#
-# We previously used a setup where the documentation was pushed to
-# Gitlab Pages automatically when pushing a tag (a new release). This
-# was much less flexible, with no easy way for users to publish web
-# content *other* than the documentation, or to control when the
-# content should be refreshed.
-#
-# It is fairly simple to publish the documentation
-# from any branch with the current interface.
-# Here is an example script:
-#
-#    # compute the current commit hash and branch name
-#    git rev-parse --short HEAD > /tmp/commit
-#    git rev-parse --abbrev-ref HEAD > /tmp/branch
-#    cat .gitlab-ci.yml /tmp
-#
-#    # move to the 'pages' branch and commit the documentation there
-#    git checkout pages
-#    mkdir -p docs
-#    git rm --ignore-unmatch -r docs > /dev/null
-#    cp -r ${DOC_PATH} docs
-#    git add docs
-#    # we ensure that the CI configuration is present on the 'pages' branch,
-#    # otherwise pushing from there may not deploy as expected.
-#    cp /tmp/.gitlab-ci.yml .
-#    git add .gitlab-ci.yml
-#    git commit -m "documentation for $(cat /tmp/branch) ($(cat /tmp/commit))" \
-#    && git checkout $(cat /tmp/branch) \
-#    || git checkout $(cat /tmp/branch)
-#
-#    echo
-#    echo "The documentation was committed to the 'pages' branch."
-#    echo "You can now push it with"
-#    echo "    git push origin pages"
-#
-pages:
-  # Hardcoded values in the job:
-  # (for Gitlab to understand that this job builds the Pages)
-  # - the job name must be 'pages'
-  # - the stage must be 'deploy'
-  # - the artifacts must be a 'public' directory
-
-  stage: deploy
-
-  # no need for an OCaml environment
-  image: alpine:latest
-
-  # no cache
-
-  # run this job only in the 'pages' branch
-  rules:
-    # https://docs.gitlab.com/ee/ci/yaml/#rules
-    - if: '$CI_COMMIT_REF_NAME == "pages"'
-      when: on_success
-  artifacts:
-    paths:
-      - public
-  script:
-    - rm -fR public/
-    - mkdir -p docs
-    - cp -r docs public
 
 
 
