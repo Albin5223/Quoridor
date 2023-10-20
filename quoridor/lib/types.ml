@@ -1,1 +1,0 @@
-(* Spécification des différents types du jeu (joueurs, plateau, murs, ...) *)
