@@ -2,22 +2,53 @@
 open Types
 
 let boardSize = 17
-let lstWall = []
 
-let posX = function 
-|XY(x,_) -> x 
+let initBoard () = 
+  let row = List.init boardSize (fun _ -> None) in
+  List.init boardSize (fun _ -> row)
 
-let posY = function 
-|XY(_,y) -> y
+let getCellContent board (x, y) = 
+  try 
+    match List.nth (List.nth board y) x with
+    | Some content -> content
+    | None -> raise (OutOfBounds "Invalid cell content")
+  with Failure _ -> raise (OutOfBounds "Position is outside the board boundaries")  
 
+let getCoordinates = function 
+| XY (x, y) -> 
+  if x >= 0 && x < boardSize && y >= 0 && y < boardSize then (x, y)
+  else raise (OutOfBounds "Position is outside the board boundaries")
 
-let wallClose p w = let (p1, p2) = w in let x = posX p in let y = posY p in
- let x1 = posX p1 in let y1 = posY p1 in
-  if((x+1 == x1 && y+1 == y1)|| (x+1 == x1 && y-1 == y1)  || (x-1 == x1 && y+1 == y1) || (x-1 == x1 && y-1 == y1) ) then true
-  else let x2 = posX p2 in let y2 = posY p2 in
-    if((x+1 == x2 && y+1 == y2)|| (x+1 == x2 && y-1 == y2)  || (x-1 == x2 && y+1 == y2) || (x-1 == x2 && y-1 == y2) ) then true
-    else false
+let getX position = fst (getCoordinates position)
+let getY position = snd (getCoordinates position)
 
+let isValidPosition (x, y) =
+  if x >= 0 && x < boardSize && y >= 0 && y < boardSize then true else false
+
+let isWallPosition (x, y) =
+  (x mod 2 = 0 || y mod 2 = 0) && (x mod 2 <> y mod 2)
+
+let isWallAdjacent position walls =
+  let (x, y) = getCoordinates position in
+  
+    if not (isValidPosition (x, y)) then raise (OutOfBounds "Position is outside the board boundaries");
+    if isWallPosition (x, y) then raise (InvalidWallPosition "Given position is a wall position");
+
+    (* Helper function to determine if a position is part of a wall *)
+    let isPartOfWall pos wall =
+      let (wall_start, wall_end) = wall in
+        pos = getCoordinates wall_start || pos = getCoordinates wall_end
+      in
+
+        (* Check if there's a wall at the specific position *)
+        let checkWallAtPosition (dx, dy) =
+          isValidPosition (x + dx, y + dy) && List.exists (fun wall -> isPartOfWall (x + dx, y + dy) wall) walls
+        in
+
+          (* Check all surrounding positions *)
+          checkWallAtPosition (-1, 0) || checkWallAtPosition (1, 0) || 
+          checkWallAtPosition (0, -1) || checkWallAtPosition (0, 1)
+  
 
 (*
 let lstOfMoves pl1 pl2 = 
