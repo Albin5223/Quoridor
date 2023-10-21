@@ -1,1 +1,0 @@
-(* Spécification de la structure du plateau de jeu et de ses caractéristiques; fonctions liées à la vérification des déplacements, à l'affichage... *)
