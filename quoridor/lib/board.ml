@@ -53,12 +53,16 @@ let lstOfMoves_wall pos = (*Returns a list of valid movements according to the p
           checkWallAtPosition (-1, 0) @ checkWallAtPosition (1, 0) @ 
           checkWallAtPosition (0, -1) @ checkWallAtPosition (0, 1)
   
+let filter position = fun (a,b) -> a <> (getX position) && b <> (getY position) 
 
 
 
-let lstOfMoves pos =  (*returns the list of possible moves depending on the position of a player*)
-  let lst = lstOfMoves_wall pos in 
-    let rec checkPlayerPos players lst = match players with
-      |pl :: l -> let lst = List.filter (fun (a,b) -> a <> (getX (pl.position)) && b <> (getY (pl.position))) lst in checkPlayerPos l lst 
-      |_ -> lst
-    in checkPlayerPos game.players lst
+let rec lstOfMoves pos =  (*returns the list of possible moves depending on the position of a player*)
+  let addMoves pl lst = if (pl <> game.current_player && (List.exists (filter pl.position) lst)) then lstOfMoves pl.position else [] in
+    let lst = lstOfMoves_wall pos in 
+      let rec checkPlayerPos players lst = match players with
+          |pl :: l -> let lst = (addMoves pl lst) @ (List.filter (filter pl.position) lst) in checkPlayerPos l lst 
+          |_ -> lst
+        in checkPlayerPos game.players lst
+
+
