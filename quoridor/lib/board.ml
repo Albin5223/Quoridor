@@ -1,60 +1,68 @@
-(* Spécification de la structure du plateau de jeu et de ses caractéristiques; fonctions liées à la vérification des déplacements, à l'affichage... *)
+(*Specification of the structure of the game board and its characteristics; functions related to movement verification, display, etc.*)
 open Types
 
-let boardSize = 17
+let boardSize = 17 (*size of the board in length and width*)
+let wallStart = 10 (*Number of walls per player at the start of the game*)
 
-let initBoard () = 
-  let row = List.init boardSize (fun _ -> None) in
+let board =  (*board initialization*)
+  let row = List.init boardSize (fun _ -> Empty) in
   List.init boardSize (fun _ -> row)
 
-let getCellContent board (x, y) = 
+
+let playerTest = {position = (0,0); walls_left = wallStart; color = White}  (*Initializing a test player (to be removed later)*)
+
+let game = { players = []; board = board; current_player = playerTest; game_state = Ingame} (*initialization of the game (to be modified later)*)
+  
+let getCellContent pos = let (x, y) = pos in (* Returns the contents of a cell*)
   try 
     match List.nth (List.nth board y) x with
-    | Some content -> content
-    | None -> raise (OutOfBounds "Invalid cell content")
-  with Failure _ -> raise (OutOfBounds "Position is outside the board boundaries")  
-
-let getCoordinates = function 
-| XY (x, y) -> 
-  if x >= 0 && x < boardSize && y >= 0 && y < boardSize then (x, y)
-  else raise (OutOfBounds "Position is outside the board boundaries")
-
-let getX position = fst (getCoordinates position)
-let getY position = snd (getCoordinates position)
-
-let isValidPosition (x, y) =
+    |content -> content
+  with Failure _ -> raise (OutOfBounds "Position is outside the board boundaries") 
+  
+let isValidPosition pos = let (x, y) = pos in (*Tests if the given position is valid*)
   if x >= 0 && x < boardSize && y >= 0 && y < boardSize then true else false
+  
+let isWall = function  (*Test if the cell contains a wall*)
+  |Wall -> true
+  |_ -> false   
 
-let isWallPosition (x, y) =
-  (x mod 2 = 0 || y mod 2 = 0) && (x mod 2 <> y mod 2)
+let isWallPosition pos = let (x, y) = pos in (*Tests if the given position can contain a wall*)
+  isWall (getCellContent (x,y))
+    
 
-let isWallAdjacent position walls =
-  let (x, y) = getCoordinates position in
+
+let getX position = fst position
+let getY position = snd position
+
+ 
+  
+let lstOfMoves_wall pos = (*Returns a list of valid movements according to the positions of the walls around*)
+  let (x, y) = pos in
   
     if not (isValidPosition (x, y)) then raise (OutOfBounds "Position is outside the board boundaries");
     if isWallPosition (x, y) then raise (InvalidWallPosition "Given position is a wall position");
 
-    (* Helper function to determine if a position is part of a wall *)
-    let isPartOfWall pos wall =
-      let (wall_start, wall_end) = wall in
-        pos = getCoordinates wall_start || pos = getCoordinates wall_end
-      in
-
         (* Check if there's a wall at the specific position *)
         let checkWallAtPosition (dx, dy) =
-          isValidPosition (x + dx, y + dy) && List.exists (fun wall -> isPartOfWall (x + dx, y + dy) wall) walls
+          if isValidPosition (x + dx, y + dy)  then 
+            if isWall (getCellContent (x + dx, y + dy)) then [(x + dx, y + dy)] else []
+          else raise (OutOfBounds "Position is outside the board boundaries")
         in
 
           (* Check all surrounding positions *)
-          checkWallAtPosition (-1, 0) || checkWallAtPosition (1, 0) || 
-          checkWallAtPosition (0, -1) || checkWallAtPosition (0, 1)
+          checkWallAtPosition (-1, 0) @ checkWallAtPosition (1, 0) @ 
+          checkWallAtPosition (0, -1) @ checkWallAtPosition (0, 1)
   
+let filter position = fun (a,b) -> a <> (getX position) && b <> (getY position) 
 
-(*
-let lstOfMoves pl1 pl2 = 
-  definir selon si il y a a coté un/une:
-  - mur
-  -extremite
-  -joueur
-  -rien
-  *)
+
+
+let rec lstOfMoves pos =  (*returns the list of possible moves depending on the position of a player*)
+  let addMoves pl lst = if (pl <> game.current_player && (List.exists (filter pl.position) lst)) then lstOfMoves pl.position else [] in
+    let lst = lstOfMoves_wall pos in 
+      let rec checkPlayerPos players lst = match players with
+          |pl :: l -> let lst = (addMoves pl lst) @ (List.filter (filter pl.position) lst) in checkPlayerPos l lst 
+          |_ -> lst
+        in checkPlayerPos game.players lst
+
+

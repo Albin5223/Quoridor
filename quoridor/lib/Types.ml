@@ -2,7 +2,7 @@
 
 type color = Black | White  (* Player's color *)
 
-type position = XY of int * int  (* Board position *)
+type position = int * int  (* Board position *)
 
 type player = {  (* Player's attributes *)
   mutable position : position;   (* Player's current position *)
