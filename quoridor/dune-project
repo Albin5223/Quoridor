@@ -15,10 +15,7 @@
 
 (package
  (name quoridor)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml dune)
- (tags
-  (topics "to describe" your project)))
+ (synopsis "Quoridor Game")
+ (description "Implementation of Quoridor Game in OCaml")
+ (depends ocaml dune))
 
-; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
