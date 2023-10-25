@@ -1,6 +1,7 @@
 ### Configuration section
 variables:
   OCAML_COMPILER: "4.11.1"
+  DUNE_VERSION: "2.11.1"
 
   CLEAN_OPAM_CACHE: "false"
   CLEAN_DUNE_CACHE: "false"
