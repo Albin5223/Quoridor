@@ -1,5 +1,6 @@
 (*Specification of the structure of the game board and its characteristics; functions related to movement verification, display, etc.*)
 open Types
+open Printf
 
 let boardSize = 17 (*size of the board in length and width*)
 let wallStart = 10 (*Number of walls per player at the start of the game*)
@@ -65,4 +66,14 @@ let rec lstOfMoves pos =  (*returns the list of possible moves depending on the 
           |_ -> lst
         in checkPlayerPos game.players lst
 
+let print_cell = function
+  | Empty -> printf " . "
+  | Wall -> printf "==="
+  | Player k when k.color = Black -> printf "(W)"
+  | _ -> printf "(B)"
 
+
+let print_board board = 
+  let print_row row = Array.iteri
+    (fun i square -> if i mod 2 = 0 then print_cell square else (if square = Empty then print_string "   " else print_cell square)) row 
+    in Array.iteri (fun j row -> if j mod 2 = 0 then print_row row; printf "@.") board 
