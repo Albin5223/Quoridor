@@ -89,7 +89,7 @@ let listOfMoves pos =
             (px = x + 2 * dx || py = y + 2 * dy)
         ) adjacentCells
       else 
-        [newPos; finalJumpPos]      
+        [finalJumpPos]
     else
       [newPos]
   in
@@ -146,4 +146,5 @@ let placeVerticalWall game pos =
                 current_player = { game.current_player with walls_left = game.current_player.walls_left - 1 } }
   else
     raise (InvalidWallPosition "Cannot place vertical wall here")
-    
+
+
