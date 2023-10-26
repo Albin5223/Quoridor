@@ -1,6 +1,6 @@
 val boardSize : int
 val wallStart : int
-val board : Types.cell_content list list
+val board : Types.cell_content array array
 val playerTest : Types.player
 val game : Types.game
 val isValidPosition : int * int -> bool
@@ -16,3 +16,4 @@ val canPlaceHorizontalWall : Types.game -> int * int -> bool
 val canPlaceVerticalWall : Types.game -> int * int -> bool
 val placeHorizontalWall : Types.game -> int * int -> Types.game
 val placeVerticalWall : Types.game -> int * int -> Types.game
+val changePosOfPlayer : Types.game -> int * int -> Types.game

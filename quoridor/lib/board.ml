@@ -4,7 +4,7 @@ open Types
 let boardSize = 17 (*size of the board in length and width*)
 let wallStart = 10 (*Number of walls per player at the start of the game*)
 
-let board = List.init boardSize (fun _ -> List.init boardSize (fun _ -> Empty)) (*board initialization*)
+let board = Array.init boardSize (fun _ -> Array.init boardSize (fun _ -> Empty)) (*board initialization*)
 
 let playerTest = {position = (0,0); walls_left = wallStart; color = White}  (*Initializing a test player (to be removed later)*)
 
@@ -16,7 +16,7 @@ let isValidPosition pos = let (x, y) = pos in (*Tests if the given position is v
 let getCellContent pos =
   let (x, y) = pos in
   if isValidPosition pos then
-    List.nth (List.nth board y) x
+    Array.get (Array.get board y) x
   else
     raise (OutOfBounds "Position is outside the board boundaries")
   
@@ -89,7 +89,7 @@ let listOfMoves pos =
             (px = x + 2 * dx || py = y + 2 * dy)
         ) adjacentCells
       else 
-        [finalJumpPos]
+        [finalJumpPos]      
     else
       [newPos]
   in
@@ -117,13 +117,13 @@ let canPlaceVerticalWall game pos =
 let placeHorizontalWall game pos =
   let (x, y) = pos in 
   if canPlaceHorizontalWall game pos then
-    let updated_row1 = List.mapi (fun j cell -> 
+    let updated_row1 = Array.mapi (fun j cell -> 
       if j = x then Wall else cell
-    ) (List.nth game.board y) in
-    let updated_board = List.mapi (fun i row -> 
+    ) (Array.get game.board y) in
+    let updated_board = Array.mapi (fun i row -> 
       if i = y then updated_row1 else row
     ) game.board in
-    { game with board = updated_board; 
+    { game with board = updated_board; (*faire une fonction*)
                 current_player = { game.current_player with walls_left = game.current_player.walls_left - 1 } }
   else
     raise (InvalidWallPosition "Cannot place horizontal wall here")
@@ -131,13 +131,13 @@ let placeHorizontalWall game pos =
 let placeVerticalWall game pos =
   let (x, y) = pos in 
   if canPlaceVerticalWall game pos then
-    let updated_row1 = List.mapi (fun j cell -> 
+    let updated_row1 = Array.mapi (fun j cell -> 
       if j = x then Wall else cell
-    ) (List.nth game.board y) in
-    let updated_row2 = List.mapi (fun j cell -> 
+    ) (Array.get game.board y) in
+    let updated_row2 = Array.mapi (fun j cell -> 
       if j = x then Wall else cell
-    ) (List.nth game.board (y + 1)) in
-    let updated_board = List.mapi (fun i row -> 
+    ) (Array.get game.board (y + 1)) in
+    let updated_board = Array.mapi (fun i row -> 
       if i = y then updated_row1 
       else if i = y+1 then updated_row2 
       else row
@@ -146,5 +146,12 @@ let placeVerticalWall game pos =
                 current_player = { game.current_player with walls_left = game.current_player.walls_left - 1 } }
   else
     raise (InvalidWallPosition "Cannot place vertical wall here")
-
-
+  
+    
+let changePosOfPlayer game pos = let (x,y) = pos in let newBoard = board in
+  let player = game.current_player in 
+    let () = Array.set (Array.get newBoard y) x (Player player) in 
+      let (x,y) = player.position in 
+        let () = Array.set (Array.get newBoard y) x Empty in
+          { game with board = newBoard;
+            current_player = { game.current_player with position = pos}}
