@@ -149,15 +149,16 @@ let placeVerticalWall game pos =
     raise (InvalidWallPosition "Cannot place vertical wall here")
     
 
-let print_cell = function
+let print_cell (cell : cell_content) = match cell with
 | Empty -> printf " . "
 | Wall -> printf "==="
 | Player k when k.color = Black -> printf "(W)"
 | _ -> printf "(B)"
 
 
-let print_board board = 
+let print_board (board : cell_content list list) = 
   let print_row row = List.iteri
     (fun i square -> if i mod 2 = 0 then print_cell square else (if square = Empty then print_string "   " else print_cell square)) row 
-    in List.iteri (fun j row -> if j mod 2 = 0 then print_row row; printf "@.") board 
+    in List.iteri (fun j row -> if j mod 2 = 0 then print_row row; print_endline "") board 
 
+let () = print_board board;;
