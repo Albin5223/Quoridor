@@ -90,7 +90,7 @@ let listOfMoves pos =
             (px = x + 2 * dx || py = y + 2 * dy)
         ) adjacentCells
       else 
-        [newPos; finalJumpPos]      
+        [finalJumpPos]
     else
       [newPos]
   in
@@ -147,18 +147,4 @@ let placeVerticalWall game pos =
                 current_player = { game.current_player with walls_left = game.current_player.walls_left - 1 } }
   else
     raise (InvalidWallPosition "Cannot place vertical wall here")
-    
 
-let print_cell (cell : cell_content) = match cell with
-| Empty -> printf " . "
-| Wall -> printf "==="
-| Player k when k.color = Black -> printf "(W)"
-| _ -> printf "(B)"
-
-
-let print_board (board : cell_content list list) = 
-  let print_row row = List.iteri
-    (fun i square -> if i mod 2 = 0 then print_cell square else (if square = Empty then print_string "   " else print_cell square)) row 
-    in List.iteri (fun j row -> if j mod 2 = 0 then print_row row; print_endline "") board 
-
-let () = print_board board;;
