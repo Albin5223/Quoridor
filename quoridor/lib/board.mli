@@ -16,3 +16,4 @@ val canPlaceHorizontalWall : Types.game -> int * int -> bool
 val canPlaceVerticalWall : Types.game -> int * int -> bool
 val placeHorizontalWall : Types.game -> int * int -> Types.game
 val placeVerticalWall : Types.game -> int * int -> Types.game
+val print_board: Types.cell_content list list -> unit

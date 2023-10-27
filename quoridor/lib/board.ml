@@ -1,6 +1,5 @@
 (*Specification of the structure of the game board and its characteristics; functions related to movement verification, display, etc.*)
 open Types
-open Printf
 
 let boardSize = 17 (*size of the board in length and width*)
 let wallStart = 10 (*Number of walls per player at the start of the game*)
@@ -148,3 +147,28 @@ let placeVerticalWall game pos =
   else
     raise (InvalidWallPosition "Cannot place vertical wall here")
 
+let print_cell i j (board : cell_content list list) =
+  let square = List.nth (List.nth board i) j in
+    match square with
+    | Player p -> if p.color = Black then print_string "(B)" else print_string "(W)"
+    | Wall -> if (i mod 2 = 0 && j mod 2 = 1) then print_string "|||"
+          else if (i mod 2 = 1 && j mod 2 = 0) then print_string "==="
+          else if (i mod 2 = 1 && j mod 2 = 1) then print_string "XXX"
+          else print_string "hein" 
+    | Empty -> if (i mod 2 = 0 && j mod 2 = 0) then print_string " . " else print_string ""
+
+
+(*let rec print_walls_available nb =
+  if nb = 0 then print_string "\n"
+  else 
+    (print_string "|||";print_string "   "; 
+     print_walls_available (nb-1))
+     *)
+    
+        
+let print_board board =
+  List.iteri
+    (fun i row -> 
+       (List.iteri (fun j _ -> print_cell i j board ; print_string " ") row);
+    print_string "\n")
+    board
