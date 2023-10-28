@@ -15,7 +15,7 @@ type cell_content =
   | Wall
   | Player of player
 
-type board = cell_content list list  (* Game board *)
+type board = cell_content array array  (* Game board *)
 
 type state = Ingame | EndGame of player  (* Game's state: ongoing or finished with a winner *)
 
