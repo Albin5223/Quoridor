@@ -1,31 +1,48 @@
-(* Specification of the different types for the game (players, board, walls, ...) *)
+(* --- Basic Types --- *)
 
-type color = Black | White  (* Player's color *)
+type color = 
+  | Red 
+  | Green 
+  | Blue 
+  | Yellow  
 
-type position = int * int  (* Board position *)
+(* Coordinate (x, y) on the board. *)
+type position = int * int
 
-type player = {  (* Player's attributes *)
-  mutable position : position;   (* Player's current position *)
-  mutable walls_left : int;      (* Remaining walls available to the player *)
-  color : color                  (* Player's color *)
+(* --- Game Components --- *)
+
+(* Attributes of a player: position on the board, remaining walls, and color. *)
+type player = {  
+  position : position;   (* Current position of the player on the board *)
+  walls_left : int;      (* Number of walls the player can still place *)
+  color : color;
 }
 
+(* Each cell on the board can be empty, contain a wall, or contain a player. *)
 type cell_content =
   | Empty
   | Wall
   | Player of player
 
-type board = cell_content list list  (* Game board *)
+(* Represents the game board as a 2D array. *)
+type board = cell_content array array
 
-type state = Ingame | EndGame of player  (* Game's state: ongoing or finished with a winner *)
+type state = 
+  | Ingame
+  | GameOver of player    
 
-type game = {  (* Game's attributes *)
-  players: player list;          (* List of players *)
-  board: board;                  (* Game board *)
-  current_player: player;        (* Player whose turn it is *)
-  game_state: state;             (* Current game state *)
+type game = {
+  players: player list;
+  board: board;                  
+  current_player: player;        
+  game_state: state;             
 }
 
-exception OutOfBounds of string           (* Raised when a position is outside the board *)
-exception InvalidWallPosition of string   (* Raised for walls in invalid positions *)
-exception InvalidMove of string           (* Raised when a move is illegal, i.e. out of bounds, on other player / wall... *)
+(* --- Game Exceptions --- *)
+
+exception OutOfBounds of string            (* Raised when accessing outside the board dimensions *)
+exception InvalidWallPosition of string    (* Raised when trying to place a wall in an invalid position *)
+exception InvalidPlayerPosition of string  (* Raised when trying to move a player to an invalid position *)
+exception InvalidMove of string            (* Raised when making a move that's not allowed by game rules *)
+exception InvalidPosition of string        (* Raised when specifying an invalid board position *)
+exception InvalidWallPlacement of string   (* Raised when placing a wall that blocks all paths to goal *)
