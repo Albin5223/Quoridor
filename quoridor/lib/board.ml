@@ -147,7 +147,31 @@ let place_vertical_wall game pos =
   else
     raise (InvalidWallPosition "Cannot place vertical wall here")
   
+let print_cell i j (board : cell_content list list) =
+  let square = List.nth (List.nth board i) j in
+    match square with
+    | Player p -> if p.color = Black then print_string "(B)" else print_string "(W)"
+    | Wall -> if (i mod 2 = 0 && j mod 2 = 1) then print_string "|||"
+          else if (i mod 2 = 1 && j mod 2 = 0) then print_string "==="
+          else if (i mod 2 = 1 && j mod 2 = 1) then print_string "XXX"
+          else print_string "hein" 
+    | Empty -> if (i mod 2 = 0 && j mod 2 = 0) then print_string " . " else print_string ""
+
+
+(*let rec print_walls_available nb =
+  if nb = 0 then print_string "\n"
+  else 
+    (print_string "|||";print_string "   "; 
+     print_walls_available (nb-1))
+     *)
     
+        
+let print_board board =
+  List.iteri
+    (fun i row -> 
+       (List.iteri (fun j _ -> print_cell i j board ; print_string " ") row);
+    print_string "\n")
+    board    
 let change_pos_of_player game pos = let (x,y) = pos in let newBoard = board in
   let player = game.current_player in 
     let () = Array.set (Array.get newBoard y) x (Player player) in 
