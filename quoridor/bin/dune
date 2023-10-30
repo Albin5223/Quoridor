@@ -1,4 +1,0 @@
-(executable
- (public_name quoridor)
- (name main)
- (libraries quoridor))
