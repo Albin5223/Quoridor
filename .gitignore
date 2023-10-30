@@ -30,3 +30,6 @@ _opam/
 
 #DS Store thing
 .DS_Store
+
+#Zone.Identifier thing
+Zone.Identifier
