@@ -389,3 +389,23 @@ let place_wall pos players_positions board =
   then temp_board
   else
     raise (InvalidWallPlacement "Wall placement blocks a player's path to goal")
+
+    
+let print_player p = match p.color with
+| Red -> Format.printf "R"
+| Green -> Format.printf "G"
+| Blue -> Format.printf "B"
+| Yellow -> Format.printf "Y"
+
+let print_cell i j board =
+let cell = get_cell_content (i,j) board in
+  match cell with
+    | Player p -> print_player p
+    | Wall -> if (i mod 2 = 0 && j mod 2 = 1) then Format.printf "|||"
+      else if (i mod 2 = 1 && j mod 2 = 0) then Format.printf "==="
+      else if (i mod 2 = 1 && j mod 2 = 1) then Format.printf "XXX"
+    | Empty -> if (i mod 2 = 0 && j mod 2 = 0) then Format.printf " . "
+ 
+          
+let print_board board =
+List.iteri (fun i row -> (List.iteri (fun j _ -> print_cell i j board) row; Format.printf "@;<5 0>"))
