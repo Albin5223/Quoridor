@@ -1,3 +1,1 @@
-open Quoridor.Board
-
-let () = print_board board
+let () = print_string "Hello World"
