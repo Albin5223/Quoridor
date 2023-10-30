@@ -1,13 +1,14 @@
-(* Specification of the different types for the game (players, board, walls, ...) *)
-
-type color = Black | White  (* Player's color *)
-
-type position = int * int  (* Board position *)
-
-type player = {  (* Player's attributes *)
-  mutable position : position;   (* Player's current position *)
-  mutable walls_left : int;      (* Remaining walls available to the player *)
-  color : color                  (* Player's color *)
+type color = Red | Green | Blue | Yellow
+type position = int * int
+type player = { position : position; walls_left : int; color : color; }
+type cell_content = Empty | Wall | Player of player
+type board = cell_content array array
+type state = Ingame | GameOver of player
+type game = {
+  players : player list;
+  board : board;
+  current_player : player;
+  game_state : state;
 }
 
 type cell_content =
