@@ -1,5 +1,12 @@
 open Board
 open Types
+let init_board = 
+  let row = Array.init board_size (fun _ -> Empty) in 
+    let board = Array.init board_size (fun _ -> row) in 
+    board
+
+let pp_board = print_board init_board
+
 
 let change_pos_of_player game pos =
   let newBoard = Array.map Array.copy game.board in

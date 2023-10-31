@@ -408,4 +408,4 @@ let cell = get_cell_content (i,j) board in
  
           
 let print_board board =
-List.iteri (fun i row -> (List.iteri (fun j _ -> print_cell i j board) row; Format.printf "@;<5 0>"))
+Array.iteri (fun i row -> (Array.iteri (fun j _ -> print_cell i j board) row; Format.printf "@;<5 1>"))
