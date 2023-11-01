@@ -261,10 +261,14 @@ let dfs_path_exists start_pos board =
       let next_moves = list_of_moves pos board in
       Array.exists
         (fun next_pos ->
-          (not visited.(snd next_pos).(fst next_pos)) && dfs next_pos)
+          let next_x, next_y = next_pos in
+          if is_valid_position next_pos && not visited.(next_y).(next_x) then
+            dfs next_pos
+          else
+            false)
         next_moves)
   in
-
+      
   dfs start_pos
 
 
@@ -292,13 +296,11 @@ let place_wall pos1 pos2 players board =
 
   (* Create a temporary copy of the board for simulating the wall placement *)
   let temp_board = Array.map Array.copy board in
-
+  
   let (x1,y1) = pos1 in 
   let (x2,y2) = pos2 in
   temp_board.(y1).(x1) <- Wall;
   temp_board.(y2).(x2) <- Wall;
-
-
   (* Check if the wall placement still allows all players to achieve their goals *)
   if
     List.for_all

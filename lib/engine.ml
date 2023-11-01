@@ -39,6 +39,10 @@ let change_pos_of_player game player pos =
   let newBoard = Array.map Array.copy game.board in
   let x, y = pos in
   let x_old, y_old = player.position in
+  if not (is_valid_position (x_old, y_old)) then
+    raise (Invalid_argument "Old position is out of bounds");
+  if not (is_valid_position (x, y)) then
+    raise (Invalid_argument "New position is out of bounds");
   newBoard.(y_old).(x_old) <- Empty;
   newBoard.(y).(x) <- Player player;
   {
@@ -67,6 +71,7 @@ let rec place_wall_random game player =
     else generate_random_wall_pos ()
   in
   let (wall_pos1,wall_pos2) = generate_random_wall_pos () in 
+  Format.printf "\n\nPlacing wall on pos1 (%d, %d) & pos2 (%d, %d)\n\n" (fst wall_pos1) (snd wall_pos1) (fst wall_pos2) (snd wall_pos2);
   try { game with board = place_wall wall_pos1 wall_pos2 game.players game.board }
   with InvalidWallPlacement _ -> place_wall_random game player
 

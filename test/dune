@@ -1,2 +1,3 @@
 (test
- (name quoridor))
+ (name quoridor_test)
+ (libraries quoridor alcotest qcheck qcheck-alcotest))
