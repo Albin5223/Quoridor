@@ -1,4 +1,4 @@
 open Quoridor.Engine
 
 
-let () = let _ = pp_board in ()
+let () = let _ = run_game in ()

@@ -9,7 +9,7 @@ type game = {
   players : player list;
   board : board;
   current_player : player;
-  game_state : state;
+  state : state;
 }
 
 exception OutOfBounds of string

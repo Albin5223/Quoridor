@@ -15,11 +15,10 @@ val is_wall_between :
 val list_of_moves :
   int * int -> Types.cell_content array array -> (int * int) array
 val dfs_path_exists : int * int -> Types.cell_content array array -> bool
-val can_place_wall :
-  int * int -> (int * int) array -> Types.cell_content array array -> bool
 val place_wall :
   int * int ->
-  (int * int) array ->
+  int * int ->
+  Types.player list ->
   Types.cell_content array array -> Types.cell_content array array
 val print_player : Types.player -> unit
 val print_cell : Types.cell_content -> unit
