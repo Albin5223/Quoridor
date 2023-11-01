@@ -11,6 +11,7 @@ let board_size = 17
 *)
 let is_valid_position pos =
   let x, y = pos in
+  Format.printf "is_valid_position %d, %d -> " x y;
   x >= 0 && x < board_size && y >= 0 && y < board_size
 
 (** [get_cell_content pos board] retrieves the content of the cell at the given [pos] on the [board].
@@ -23,6 +24,7 @@ let get_cell_content pos board =
   if not (is_valid_position pos) then
     raise (OutOfBounds "Position is outside the board boundaries");
   let x, y = pos in
+  Format.printf "get_cell_content -> %d %d " x y;
   board.(y).(x)
 
 (** [is_wall cell] determines if a given [cell] represents a wall on the board.
@@ -33,7 +35,7 @@ let is_wall = function Wall -> true | _ -> false
 (** [is_player cell] determines if a given [cell] represents a player on the board.
     @return true if the cell is a player, otherwise false.
 *)
-let is_player = function Player _ -> true | _ -> false
+let is_player = Format.printf "is_player -> "; function Player _ -> true | _ -> false
 
 (** [is_wall_position pos] determines if a given position [pos] is valid for a wall on the board.
     @param pos is a tuple representing the (x, y) coordinates on the board.
@@ -79,6 +81,7 @@ let move_vectors =
     @raise InvalidWallPosition if the provided position itself is a wall position.
 *)
 let list_of_walls pos board =
+  Format.printf "list_of_walls -> ";
   let x, y = pos in
 
   if is_wall_position pos then
@@ -102,11 +105,11 @@ let list_of_walls pos board =
     @raise InvalidWallPosition if the given position is a wall position.
 *)
 let list_of_players pos board =
+  Format.printf "list_of_players -> ";
   let x, y = pos in
 
   if is_wall_position pos then
     raise (InvalidWallPosition "Given position is a wall position");
-
   Array.fold_left
     (fun acc (dx, dy) ->
       let newPos = (x + (2 * dx), y + (2 * dy)) in
@@ -124,6 +127,7 @@ let list_of_players pos board =
     @raise InvalidPosition if positions are not even coordinates.
 *)
 let is_wall_between pos1 pos2 board =
+  Format.printf "is_wall_between -> ";
   let x1, y1 = pos1 in
   let x2, y2 = pos2 in
 
@@ -153,6 +157,7 @@ let is_wall_between pos1 pos2 board =
     @raise [InvalidWallPosition] if the position is a wall position.
 *)
 let list_of_moves pos board =
+  Format.printf "list_of_moves -> ";
   let x, y = pos in
 
   (* Validate the position on the board *)
@@ -217,6 +222,7 @@ let list_of_moves pos board =
     @raise [OutOfBounds] if the start position is outside the board boundaries.
 *)
 let dfs_path_exists start_pos board =
+  Format.printf "dfs_path... -> ";
   (* Validate the start position *)
   if not (is_valid_position start_pos) then
     raise (OutOfBounds "Start position is outside the board boundaries");
@@ -273,6 +279,7 @@ let dfs_path_exists start_pos board =
     @raise [InvalidWallPlacement] if wall placement is invalid or blocks a player's path.
 *)
 let place_wall pos1 pos2 players board =
+  Format.printf "place_wall -> ";
   (* Validate the position *)
   if not (is_valid_position pos1 || is_valid_position pos2) then
     raise (OutOfBounds "Position is outside the board boundaries");

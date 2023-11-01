@@ -88,20 +88,20 @@ let det_move game player =
 
 (* TODO : verify that code is running correctly, add robustness and complets it *)
 
-(*let change_current_player game = let current_player = game.current_player in
+let change_current_player game = let current_player = game.current_player in
   let new_player_lst = (List.filter (fun p -> p <> current_player) game.players) @ [current_player] in
     { game with 
       players = new_player_lst;
       current_player = List.nth new_player_lst 0;
-    }*)
+    }
 
 
 let run_game = Random.self_init ();
   let rec aux game = 
     print_board game.board;
     if game.state = Ingame then 
-      let game = det_move game game.current_player in(*
-        let game = change_current_player game in *)let r = Random.int 10 in
+      let game = det_move game game.current_player in
+        let game = change_current_player game in let r = Random.int 10 in
           Format.printf "%d" r;
           if r == 0 then aux {game with state = (GameOver game.current_player)}
           else aux game
