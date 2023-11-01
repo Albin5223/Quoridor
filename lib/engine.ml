@@ -1,10 +1,10 @@
 open Board
 open Types
+
+
 let init_board = 
   let board = Array.make_matrix board_size board_size Empty in 
     board
-
-
 
 let init_player pos color = {
   position = pos; 
@@ -55,19 +55,7 @@ let move game player =
       let r = Random.int (Array.length lstMv) in
       let newPos = lstMv.(r) in
       change_pos_of_player game player newPos
-(*
-let rec place_wall_random game player =
-  let rec generate_random_wall_pos () =
-    let x = Random.int board_size in
-    let y = Random.int board_size in
-    Format.printf "%d,%d " x y ; 
-    if x mod 2 = 1 && y mod 2 = 1 && is_wall_position (x, y) then (x, y)
-    else generate_random_wall_pos ()
-  in
-  let wall_pos = generate_random_wall_pos () in 
-  try { game with board = place_wall wall_pos [| player.position |] game.board }
-  with InvalidWallPlacement _ -> place_wall_random game player
-*)
+
 
 let rec place_wall_random game player =
   let rec generate_random_wall_pos () =
@@ -95,7 +83,7 @@ let change_current_player game = let current_player = game.current_player in
       current_player = List.nth new_player_lst 0;
     }
 
-
+(*fonction non terminée (en attente de la fonction de verification de victoire)*)
 let run_game = Random.self_init ();
   let rec aux game = 
     print_board game.board;
@@ -108,25 +96,3 @@ let run_game = Random.self_init ();
     else Format.printf "partie terminée" 
       in aux (init_game 2)
 
-(*
-let run_game = 
-  let rec aux game = 
-    if game.state = Ingame then
-      let game = det_move game game.current_player in
-        print_board game.board;
-        let game = change_current_player game in let r = Random.int 2 in
-          if r == 0 then aux {game with state = (GameOver game.current_player)}
-          else aux game
-    else Format.printf "partie terminée" 
-      in aux (init_game 2)
-*)
-(*
-let run_game = 
-  let game = init_game 2 in
-  while game.state = Ingame do
-    let game = det_move game game.current_player in
-      print_board game.board;
-      let game = change_current_player game in let r = Random.int 10 in
-        if r == 0 then let game = {game with state = (GameOver game.current_player)}
-  done
-*)
