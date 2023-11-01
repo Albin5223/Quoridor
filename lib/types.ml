@@ -50,3 +50,7 @@ exception
 exception
   InvalidWallPlacement of
     string (* Raised when placing a wall that blocks all paths to goal *)
+
+exception
+  InvalidNumberPlayer of
+    string (* Raised when when the number of players is not between 2 and 4 inclusive *)

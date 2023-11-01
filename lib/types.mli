@@ -18,3 +18,4 @@ exception InvalidPlayerPosition of string
 exception InvalidMove of string
 exception InvalidPosition of string
 exception InvalidWallPlacement of string
+exception InvalidNumberPlayer of string

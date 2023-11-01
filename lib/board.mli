@@ -22,5 +22,5 @@ val place_wall :
   (int * int) array ->
   Types.cell_content array array -> Types.cell_content array array
 val print_player : Types.player -> unit
-val print_cell : int -> int -> Types.cell_content array array -> unit
-val print_board : Types.cell_content array array -> 'a array array -> unit
+val print_cell : Types.cell_content -> unit
+val print_board : Types.cell_content array array -> unit

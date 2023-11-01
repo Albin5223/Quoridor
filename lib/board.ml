@@ -392,20 +392,19 @@ let place_wall pos players_positions board =
 
     
 let print_player p = match p.color with
-| Red -> Format.printf "R"
-| Green -> Format.printf "G"
-| Blue -> Format.printf "B"
-| Yellow -> Format.printf "Y"
+| Red -> Format.printf " R "
+| Green -> Format.printf " G "
+| Blue -> Format.printf " B "
+| Yellow -> Format.printf " Y "
 
-let print_cell i j board =
-let cell = get_cell_content (i,j) board in
+let print_cell cell =
   match cell with
     | Player p -> print_player p
-    | Wall -> if (i mod 2 = 0 && j mod 2 = 1) then Format.printf "|||"
-      else if (i mod 2 = 1 && j mod 2 = 0) then Format.printf "==="
-      else if (i mod 2 = 1 && j mod 2 = 1) then Format.printf "XXX"
-    | Empty -> if (i mod 2 = 0 && j mod 2 = 0) then Format.printf " . "
+    | Wall -> Format.printf " # "  
+    | Empty -> Format.printf " . "
  
-          
-let print_board board =
-Array.iteri (fun i row -> (Array.iteri (fun j _ -> print_cell i j board) row; Format.printf "@;<5 1>"))
+let print_row row = Array.iter (fun cell -> print_cell cell) row
+
+  let print_board (board : Types.cell_content array array) = 
+    Array.iter (fun row -> print_row row; Format.printf "@;") board
+
