@@ -350,7 +350,7 @@ let place_wall pos players_positions board =
   let temp_board = Array.map Array.copy board in
   let x, y = pos in
 
-  (* [modify_board_for_wall ()] is an inner function that adjusts the [temp_board]
+  (** [modify_board_for_wall ()] is an inner function that adjusts the [temp_board]
       based on the wall placement logic, depending on the coordinates [x] and [y].
       @return [true] if the wall can be placed at the specified position, [false] otherwise.
   *)
@@ -394,7 +394,7 @@ let place_wall pos players_positions board =
     who is in an enemy zone i.e. the game is finished 
     @param game is the current game
     @return the player who won the game
-    @raise Not_found otherwise *)
+    @raise [Not_found] otherwise *)
 let winning_player game = 
   (* Hashtable to associate colors with the condition to be in its zone *)
   let colors_zones = Hashtbl.create 4 in
