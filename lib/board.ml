@@ -47,7 +47,7 @@ let is_wall_position pos =
     raise (InvalidPosition "Position is not valid on the board");
 
   let x, y = pos in
-  x mod 2 = 1 || y mod 2 = 1
+  (x mod 2 = 1 && y mod 2 = 0) || (y mod 2 = 1)
 
 (** [is_player_position pos] determines if a given position [pos] is valid for a player on the board.
     @param pos is a tuple representing the (x, y) coordinates on the board.
@@ -61,62 +61,60 @@ let is_player_position pos =
   let x, y = pos in
   x mod 2 = 0 && y mod 2 = 0
 
-(** Array defining the potential movement vectors from a position *)
+(** List defining the potential movement vectors from a position *)
 let move_vectors =
-  [|
-    (-1, 0);
-    (* Move to the left *)
-    (1, 0);
-    (* Move to the right *)
-    (0, -1);
-    (* Move upwards *)
-    (0, 1) (* Move downwards *);
-  |]
+  [
+    (-1, 0);  (* Move to the left *)
+    (1, 0);   (* Move to the right *)
+    (0, -1);  (* Move upwards *)
+    (0, 1)    (* Move downwards *)
+  ]
 
 (** [list_of_walls pos board] produces a list of wall positions adjacent to a given position.
     @param pos is the starting position for which we want to find adjacent walls.
     @param board is the current game board.
-    @return an array containing positions (coordinates) of adjacent walls.
+    @return a list containing positions (coordinates) of adjacent walls.
     @raise OutOfBounds if the provided position is outside the board boundaries.
-    @raise InvalidWallPosition if the provided position itself is a wall position.
+    @raise InvalidPlayerPosition if the provided position itself is not a player position.
 *)
 let list_of_walls pos board =
   Format.printf "list_of_walls -> ";
   let x, y = pos in
 
-  if is_wall_position pos then
-    raise (InvalidWallPosition "Given position is a wall position");
+  if not (is_player_position pos) then
+    raise (InvalidPlayerPosition "Given position is not a player's position");
 
-  (* Iterate over possible directions, accumulating valid wall positions into an array *)
-  Array.fold_left
+  (* Iterate over possible directions, accumulating valid wall positions into a list *)
+  List.fold_left
     (fun acc (dx, dy) ->
       let newPos = (x + dx, y + dy) in
       if is_valid_position newPos && is_wall (get_cell_content newPos board)
-      then Array.append acc [| newPos |]
+      then newPos :: acc
       else acc)
-    [||] move_vectors
+    [] move_vectors
 
-(** [list_of_players pos board] returns an array of positions of players 
+(** [list_of_players pos board] returns a list of positions of players 
     around the specified position [pos] on the [board], considering direct 
     neighbors two steps away in the vertical and horizontal directions.
     @param pos is the position around which we are searching for players.
     @param board is the current game board.
     @raise OutOfBounds if the given position is outside of the board boundaries.
-    @raise InvalidWallPosition if the given position is a wall position.
+    @raise InvalidPlayerPosition if the given position is not a player position.
 *)
 let list_of_players pos board =
   Format.printf "list_of_players -> ";
   let x, y = pos in
 
-  if is_wall_position pos then
-    raise (InvalidWallPosition "Given position is a wall position");
-  Array.fold_left
+  if not (is_player_position pos) then
+    raise (InvalidPlayerPosition "Given position is not a player's position");
+
+  List.fold_left
     (fun acc (dx, dy) ->
       let newPos = (x + (2 * dx), y + (2 * dy)) in
       if is_valid_position newPos && is_player (get_cell_content newPos board)
-      then Array.append acc [| newPos |]
+      then newPos :: acc
       else acc)
-    [||] move_vectors
+    [] move_vectors
 
 (** [is_wall_between pos1 pos2 board] checks if there's a wall between 
     two positions [pos1] and [pos2] on the [board].
@@ -137,15 +135,12 @@ let is_wall_between pos1 pos2 board =
   if not (is_player_position pos1 && is_player_position pos2) then
     raise (InvalidPosition "Positions must be even coordinates");
 
-  if x1 = x2 then
-    let wall_y = if y1 < y2 then y1 + 1 else y1 - 1 in
-    is_wall_position (x1, wall_y)
-    && is_wall (get_cell_content (x1, wall_y) board)
-  else if y1 = y2 then
-    let wall_x = if x1 < x2 then x1 + 1 else x1 - 1 in
-    is_wall_position (wall_x, y1)
-    && is_wall (get_cell_content (wall_x, y1) board)
-  else false
+  (* Check if the positions are adjacent *)
+  if (abs (x1 - x2) = 2 && y1 = y2) || (x1 = x2 && abs (y1 - y2) = 2) then
+    let wall_pos = ((x1 + x2) / 2, (y1 + y2) / 2) in
+    is_wall_position wall_pos && is_wall (get_cell_content wall_pos board)
+  else
+    raise (InvalidPosition "The positions are not adjacent")
 
 (** [list_of_moves pos board] calculates the possible moves for a player at 
     position [pos] on the [board]. The moves are determined based on the neighboring 
@@ -154,7 +149,7 @@ let is_wall_between pos1 pos2 board =
     @param board represents the current state of the game board.
     @return an array containing the possible move positions for the player.
     @raise [OutOfBounds] if the position is outside the board boundaries.
-    @raise [InvalidWallPosition] if the position is a wall position.
+    @raise [InvalidPlayerPosition] if the position is not a player position.
 *)
 let list_of_moves pos board =
   Format.printf "list_of_moves -> ";
@@ -163,10 +158,8 @@ let list_of_moves pos board =
   (* Validate the position on the board *)
   if not (is_valid_position (x, y)) then
     raise (OutOfBounds "Position is outside the board boundaries");
-  if is_wall_position pos then
-    raise (InvalidWallPosition "Given position is a wall position");
   if not (is_player_position pos) then
-    raise (InvalidPosition "Given position is not a player's position");
+    raise (InvalidPlayerPosition "Given position is not a player's position");
 
   (* Obtain walls and players adjacent to the current position *)
   let wallsAround = list_of_walls pos board in
@@ -176,43 +169,45 @@ let list_of_moves pos board =
       This function accumulates a list of moves by examining each potential move
       relative to walls and other players.
   *)
-  Array.fold_left
+  List.fold_left
     (fun acc (dx, dy) ->
       let wallPos = (x + dx, y + dy) in
       let newPos = (x + (2 * dx), y + (2 * dy)) in
 
       (* Block move direction if there's a wall in the path *)
-      if Array.exists (( = ) wallPos) wallsAround then acc
-        (* Handle cases where there's a player in the adjacent cell *)
-      else if Array.exists (( = ) newPos) playersAround then
+      if List.exists (( = ) wallPos) wallsAround then acc
+      (* Handle cases where there's a player in the adjacent cell *)
+      else if List.exists (( = ) newPos) playersAround then
         let jumpPos = (x + (4 * dx), y + (4 * dy)) in
         if
           is_valid_position jumpPos
-          && not (Array.exists (( = ) jumpPos) playersAround)
-        then Array.append acc [| jumpPos |]
+          && not (is_player (get_cell_content jumpPos board))
+          && not (is_wall_between newPos jumpPos board)
+        then jumpPos :: acc
         else
           (* Check for valid moves around the obstructing player *)
           let adjacent_positions_around_newPos =
-            Array.map
+            List.map
               (fun (ddx, ddy) ->
-                (x + (2 * dx) + (2 * ddx), y + (2 * dy) + (2 * ddy)))
+                let newX, newY = newPos in  (* position of the obstructing player *)
+                (newX + 2 * ddx, newY + 2 * ddy))
               move_vectors
-          in
+          in          
           let valid_adjacent_positions =
-            Array.fold_left
+            List.fold_left
               (fun acc pos ->
                 if
                   is_valid_position pos
-                  && (not (Array.exists (( = ) pos) playersAround))
+                  && not (is_player (get_cell_content pos board))
                   && not (is_wall_between newPos pos board)
-                then Array.append acc [| pos |]
+                then pos :: acc
                 else acc)
-              [||] adjacent_positions_around_newPos
+              [] adjacent_positions_around_newPos
           in
-          Array.concat [ acc; valid_adjacent_positions ]
-        (* Add move direction if there's an unoccupied cell *)
-      else Array.append acc [| newPos |])
-    [||] move_vectors
+          List.append acc valid_adjacent_positions
+      (* Add move direction if there's an unoccupied cell *)
+      else newPos :: acc)
+    [] move_vectors
 
 (** [dfs_path_exists start_pos board] determines if there's a path from [start_pos] 
     to the target position on the [board] using a depth-first search (DFS). 
@@ -220,6 +215,7 @@ let list_of_moves pos board =
     @param board is the current game board.
     @return [true] if a path exists, [false] otherwise.
     @raise [OutOfBounds] if the start position is outside the board boundaries.
+    @raise [InvalidPlayerPosition] if the start position is not a player position.
 *)
 let dfs_path_exists start_pos board =
   Format.printf "dfs_path... -> ";
@@ -227,7 +223,7 @@ let dfs_path_exists start_pos board =
   if not (is_valid_position start_pos) then
     raise (OutOfBounds "Start position is outside the board boundaries");
   if not (is_player_position start_pos) then
-    raise (InvalidPosition "Start position is not a player's position");
+    raise (InvalidPlayerPosition "Start position is not a player's position");
 
   (* Create a matrix to keep track of visited positions *)
   let visited = Array.make_matrix board_size board_size false in
@@ -259,7 +255,7 @@ let dfs_path_exists start_pos board =
     else (
       visited.(y).(x) <- true;
       let next_moves = list_of_moves pos board in
-      Array.exists
+      List.exists
         (fun next_pos ->
           let next_x, next_y = next_pos in
           if is_valid_position next_pos && not visited.(next_y).(next_x) then
@@ -268,9 +264,73 @@ let dfs_path_exists start_pos board =
             false)
         next_moves)
   in
-      
   dfs start_pos
 
+(** [can_place_wall pos players_positions board] checks if a wall can be placed 
+    at the specified [pos] without blocking any player in [players_positions] on the [board].
+    @param pos is the position where the wall is to be placed.
+    @param players_positions is the array containing the positions of all players.
+    @param board represents the current state of the game board.
+    @return [true] if the wall can be placed at [pos], [false] otherwise.
+    @raise [OutOfBounds] if the position is outside the board boundaries.
+    @raise [InvalidWallPosition] if the given position is not a wall position.
+    @raise [InvalidWallPlacement] if wall placement is invalid or overlaps with an existing wall.
+*)
+let can_place_wall pos players_positions board =
+  (* Validate the position *)
+  if not (is_valid_position pos) then
+    raise (OutOfBounds "Position is outside the board boundaries");
+  if not (is_wall_position pos) then
+    raise (InvalidWallPosition "Given position is not a wall position");
+
+  (* Check if there's already a wall at the given position *)
+  if is_wall (get_cell_content pos board) then
+    raise (InvalidWallPlacement "A wall already exists at this position");
+
+  (* Create a temporary copy of the board to simulate placing the wall *)
+  let temp_board = Array.map Array.copy board in
+  let x, y = pos in
+
+  (* [wall_inserted] checks and simulates the placement of a wall either
+      vertically or horizontally based on the coordinates [x] and [y].
+      @return [true] if the wall can be inserted at the given position, [false] otherwise.
+  *)
+  let wall_inserted =
+    match (x mod 2, y mod 2) with
+    | 1, 0 -> (* vertical wall *)
+      if
+        y < board_size - 2
+        && is_valid_position (x, y + 1) && not (is_wall (get_cell_content (x, y + 1) temp_board))
+        && is_valid_position (x, y + 2) && not (is_wall (get_cell_content (x, y + 2) temp_board))
+      then (
+        temp_board.(y).(x) <- Wall;
+        temp_board.(y + 1).(x) <- Wall;
+        temp_board.(y + 2).(x) <- Wall;
+        true)
+      else false
+    | _, 1 -> (* horizontal wall *)
+        if
+          x < board_size - 2
+          && is_valid_position (x + 1, y) && not (is_wall (get_cell_content (x + 1, y) temp_board))
+          && is_valid_position (x + 2, y) && not (is_wall (get_cell_content (x + 2, y) temp_board))
+        then (
+          temp_board.(y).(x) <- Wall;
+          temp_board.(y).(x + 1) <- Wall;
+        temp_board.(y).(x + 2) <- Wall;
+          true)
+        else false
+    | _ -> false
+  in
+
+  (* If the wall is simulated to be inserted, verify each player can reach their target *)
+  if not wall_inserted then
+    raise
+      (InvalidWallPlacement
+         "Wall placement is either invalid or overlaps with an existing wall");
+
+  Array.for_all
+    (fun player_pos -> dfs_path_exists player_pos temp_board)
+    players_positions
 
 (** [place_wall pos players_positions board] attempts to place a wall on the [board] at [pos] 
     without blocking any player in [players_positions]. 
