@@ -45,7 +45,7 @@ let is_wall_position pos =
     raise (InvalidPosition "Position is not valid on the board");
 
   let x, y = pos in
-  (x mod 2 = 1 && y mod 2 = 0) || (y mod 2 = 1)
+  (x mod 2 = 1 && y mod 2 = 0) || y mod 2 = 1
 
 (** [is_player_position pos] determines if a given position [pos] is valid for a player on the board.
     @param pos is a tuple representing the (x, y) coordinates on the board.
@@ -62,10 +62,13 @@ let is_player_position pos =
 (** List defining the potential movement vectors from a position *)
 let move_vectors =
   [
-    (-1, 0);  (* Move to the left *)
-    (1, 0);   (* Move to the right *)
-    (0, -1);  (* Move upwards *)
-    (0, 1)    (* Move downwards *)
+    (-1, 0);
+    (* Move to the left *)
+    (1, 0);
+    (* Move to the right *)
+    (0, -1);
+    (* Move upwards *)
+    (0, 1) (* Move downwards *);
   ]
 
 (** [list_of_walls pos board] produces a list of wall positions adjacent to a given position.
@@ -134,8 +137,7 @@ let is_wall_between pos1 pos2 board =
   if (abs (x1 - x2) = 2 && y1 = y2) || (x1 = x2 && abs (y1 - y2) = 2) then
     let wall_pos = ((x1 + x2) / 2, (y1 + y2) / 2) in
     is_wall_position wall_pos && is_wall (get_cell_content wall_pos board)
-  else
-    raise (InvalidPosition "The positions are not adjacent")
+  else raise (InvalidPosition "The positions are not adjacent")
 
 (** [list_of_moves pos board] calculates the possible moves for a player at 
     position [pos] on the [board]. The moves are determined based on the neighboring 
@@ -170,12 +172,12 @@ let list_of_moves pos board =
 
       (* Block move direction if there's a wall in the path *)
       if List.exists (( = ) wallPos) wallsAround then acc
-      (* Handle cases where there's a player in the adjacent cell *)
+        (* Handle cases where there's a player in the adjacent cell *)
       else if List.exists (( = ) newPos) playersAround then
         let jumpPos = (x + (4 * dx), y + (4 * dy)) in
         if
           is_valid_position jumpPos
-          && not (is_player (get_cell_content jumpPos board))
+          && (not (is_player (get_cell_content jumpPos board)))
           && not (is_wall_between newPos jumpPos board)
         then jumpPos :: acc
         else
@@ -183,26 +185,29 @@ let list_of_moves pos board =
           let adjacent_positions_around_newPos =
             List.map
               (fun (ddx, ddy) ->
-                let newX, newY = newPos in  (* position of the obstructing player *)
-                (newX + 2 * ddx, newY + 2 * ddy))
+                let newX, newY = newPos in
+                (* position of the obstructing player *)
+                (newX + (2 * ddx), newY + (2 * ddy)))
               move_vectors
-          in          
+          in
           let valid_adjacent_positions =
             List.fold_left
               (fun acc pos ->
                 if
                   is_valid_position pos
-                  && not (is_player (get_cell_content pos board))
+                  && (not (is_player (get_cell_content pos board)))
                   && not (is_wall_between newPos pos board)
                 then pos :: acc
                 else acc)
               [] adjacent_positions_around_newPos
           in
           List.append acc valid_adjacent_positions
-      (* Add move direction if there's an unoccupied cell *)
-      else if is_valid_position newPos && not (is_player (get_cell_content newPos board))
-        then newPos :: acc
-        else acc)
+        (* Add move direction if there's an unoccupied cell *)
+      else if
+        is_valid_position newPos
+        && not (is_player (get_cell_content newPos board))
+      then newPos :: acc
+      else acc)
     [] move_vectors
 
 (** [dfs_path_exists start_pos board] determines if there's a path from [start_pos] 
@@ -288,26 +293,32 @@ let can_place_wall pos players_positions board =
   *)
   let wall_inserted =
     match (x mod 2, y mod 2) with
-    | 1, 0 -> (* vertical wall *)
-      if
-        y < board_size - 2
-        && is_valid_position (x, y + 1) && not (is_wall (get_cell_content (x, y + 1) temp_board))
-        && is_valid_position (x, y + 2) && not (is_wall (get_cell_content (x, y + 2) temp_board))
-      then (
-        temp_board.(y).(x) <- Wall;
-        temp_board.(y + 1).(x) <- Wall;
-        temp_board.(y + 2).(x) <- Wall;
-        true)
-      else false
-    | _, 1 -> (* horizontal wall *)
+    | 1, 0 ->
+        (* vertical wall *)
+        if
+          y < board_size - 2
+          && is_valid_position (x, y + 1)
+          && (not (is_wall (get_cell_content (x, y + 1) temp_board)))
+          && is_valid_position (x, y + 2)
+          && not (is_wall (get_cell_content (x, y + 2) temp_board))
+        then (
+          temp_board.(y).(x) <- Wall;
+          temp_board.(y + 1).(x) <- Wall;
+          temp_board.(y + 2).(x) <- Wall;
+          true)
+        else false
+    | _, 1 ->
+        (* horizontal wall *)
         if
           x < board_size - 2
-          && is_valid_position (x + 1, y) && not (is_wall (get_cell_content (x + 1, y) temp_board))
-          && is_valid_position (x + 2, y) && not (is_wall (get_cell_content (x + 2, y) temp_board))
+          && is_valid_position (x + 1, y)
+          && (not (is_wall (get_cell_content (x + 1, y) temp_board)))
+          && is_valid_position (x + 2, y)
+          && not (is_wall (get_cell_content (x + 2, y) temp_board))
         then (
           temp_board.(y).(x) <- Wall;
           temp_board.(y).(x + 1) <- Wall;
-        temp_board.(y).(x + 2) <- Wall;
+          temp_board.(y).(x + 2) <- Wall;
           true)
         else false
     | _ -> false
@@ -354,26 +365,32 @@ let place_wall pos players_positions board =
   *)
   let modify_board_for_wall () =
     match (x mod 2, y mod 2) with
-    | 1, 0 -> (* vertical wall *)
-      if
-        y < board_size - 2
-        && is_valid_position (x, y + 1) && not (is_wall (get_cell_content (x, y + 1) temp_board))
-        && is_valid_position (x, y + 2) && not (is_wall (get_cell_content (x, y + 2) temp_board))
-      then (
-        temp_board.(y).(x) <- Wall;
-        temp_board.(y + 1).(x) <- Wall;
-        temp_board.(y + 2).(x) <- Wall;
-        true)
-      else false
-    | _, 1 -> (* horizontal wall *)
+    | 1, 0 ->
+        (* vertical wall *)
+        if
+          y < board_size - 2
+          && is_valid_position (x, y + 1)
+          && (not (is_wall (get_cell_content (x, y + 1) temp_board)))
+          && is_valid_position (x, y + 2)
+          && not (is_wall (get_cell_content (x, y + 2) temp_board))
+        then (
+          temp_board.(y).(x) <- Wall;
+          temp_board.(y + 1).(x) <- Wall;
+          temp_board.(y + 2).(x) <- Wall;
+          true)
+        else false
+    | _, 1 ->
+        (* horizontal wall *)
         if
           x < board_size - 2
-          && is_valid_position (x + 1, y) && not (is_wall (get_cell_content (x + 1, y) temp_board))
-          && is_valid_position (x + 2, y) && not (is_wall (get_cell_content (x + 2, y) temp_board))
+          && is_valid_position (x + 1, y)
+          && (not (is_wall (get_cell_content (x + 1, y) temp_board)))
+          && is_valid_position (x + 2, y)
+          && not (is_wall (get_cell_content (x + 2, y) temp_board))
         then (
           temp_board.(y).(x) <- Wall;
           temp_board.(y).(x + 1) <- Wall;
-        temp_board.(y).(x + 2) <- Wall;
+          temp_board.(y).(x + 2) <- Wall;
           true)
         else false
     | _ -> false

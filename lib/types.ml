@@ -50,3 +50,7 @@ exception
 exception
   InvalidWallPlacement of
     string (* Raised when placing a wall that blocks all paths to goal *)
+
+exception
+  NoWinningPlayer of
+    string (* Raised when no player has reached their target position *)

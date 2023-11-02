@@ -1,41 +1,32 @@
 open Board
 open Types
 
-let change_pos_of_player game pos =
-  let newBoard = Array.map Array.copy game.board in
-  let player = game.current_player in
-  let x, y = pos in
-  newBoard.(y).(x) <- Player player;
-  let x_old, y_old = player.position in
-  newBoard.(y_old).(x_old) <- Empty;
-  {
-    game with
-    board = newBoard;
-    current_player = { game.current_player with position = pos };
-  }
+(** [winning_player game] returns the first player of the game
+    who has reached their target zone, indicating that the game is finished.
+    @param game is the current game
+    @return the player who won the game
+    @raise [NoWinningPlayer] if no player has reached their target zone *)
+let winning_player game =
+  (* Hashtable to associate colors with the conditions to check if they are in their target zones *)
+  let colors_zones = Hashtbl.create 4 in
+  Hashtbl.add colors_zones Red (fun _ y -> y = board_size - 1);
+  Hashtbl.add colors_zones Green (fun x _ -> x = board_size - 1);
+  Hashtbl.add colors_zones Blue (fun _ y -> y = 0);
+  Hashtbl.add colors_zones Yellow (fun x _ -> x = 0);
 
-let move game player =
-  let lstMv = list_of_moves player.position game.board in
-  match lstMv with
-  | [||] -> game
-  | _ ->
-      let r = Random.int (Array.length lstMv) in
-      let newPos = lstMv.(r) in
-      change_pos_of_player game newPos
-
-let rec place_wall_random game player =
-  let rec generate_random_wall_pos () =
-    let x = Random.int board_size in
-    let y = Random.int board_size in
-    if x mod 2 = 1 && y mod 2 = 1 && is_wall_position (x, y) then (x, y)
-    else generate_random_wall_pos ()
+  (* Function to check if a player has reached their target zone *)
+  let player_reached_target player =
+    Hashtbl.fold
+      (fun k v acc ->
+        acc
+        ||
+        if k <> player.color then v (fst player.position) (snd player.position)
+        else false)
+      colors_zones false
+    (* Find the player who has reached their target zone.
+       Raises Not_found with a descriptive error message if no player is found *)
   in
-  let wall_pos = generate_random_wall_pos () in
-  try { game with board = place_wall wall_pos [| player.position |] game.board }
-  with InvalidWallPlacement _ -> place_wall_random game player
 
-let det_move game player =
-  let r = Random.int 2 in
-  if r == 0 then move game player else place_wall_random game player
-
-(* TODO : verify that code is running correctly, add robustness and complets it *)
+  try List.find player_reached_target game.players
+  with Not_found ->
+    raise (NoWinningPlayer "No player has reached their target zone")
