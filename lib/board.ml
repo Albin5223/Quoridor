@@ -262,71 +262,7 @@ let dfs_path_exists start_pos board =
   in
   dfs start_pos
 
-(** [can_place_wall pos players_positions board] checks if a wall can be placed 
-    at the specified [pos] without blocking any player in [players_positions] on the [board].
-    @param pos is the position where the wall is to be placed.
-    @param players_positions is the array containing the positions of all players.
-    @param board represents the current state of the game board.
-    @return [true] if the wall can be placed at [pos], [false] otherwise.
-    @raise [OutOfBounds] if the position is outside the board boundaries.
-    @raise [InvalidWallPosition] if the given position is not a wall position.
-    @raise [InvalidWallPlacement] if wall placement is invalid or overlaps with an existing wall.
-*)
-let can_place_wall pos players_positions board =
-  (* Validate the position *)
-  if not (is_valid_position pos) then
-    raise (OutOfBounds "Position is outside the board boundaries");
-  if not (is_wall_position pos) then
-    raise (InvalidWallPosition "Given position is not a wall position");
 
-  (* Check if there's already a wall at the given position *)
-  if is_wall (get_cell_content pos board) then
-    raise (InvalidWallPlacement "A wall already exists at this position");
-
-  (* Create a temporary copy of the board to simulate placing the wall *)
-  let temp_board = Array.map Array.copy board in
-  let x, y = pos in
-
-  (* [wall_inserted] checks and simulates the placement of a wall either
-      vertically or horizontally based on the coordinates [x] and [y].
-      @return [true] if the wall can be inserted at the given position, [false] otherwise.
-  *)
-  let wall_inserted =
-    match (x mod 2, y mod 2) with
-    | 1, 0 -> (* vertical wall *)
-      if
-        y < board_size - 2
-        && is_valid_position (x, y + 1) && not (is_wall (get_cell_content (x, y + 1) temp_board))
-        && is_valid_position (x, y + 2) && not (is_wall (get_cell_content (x, y + 2) temp_board))
-      then (
-        temp_board.(y).(x) <- Wall;
-        temp_board.(y + 1).(x) <- Wall;
-        temp_board.(y + 2).(x) <- Wall;
-        true)
-      else false
-    | _, 1 -> (* horizontal wall *)
-        if
-          x < board_size - 2
-          && is_valid_position (x + 1, y) && not (is_wall (get_cell_content (x + 1, y) temp_board))
-          && is_valid_position (x + 2, y) && not (is_wall (get_cell_content (x + 2, y) temp_board))
-        then (
-          temp_board.(y).(x) <- Wall;
-          temp_board.(y).(x + 1) <- Wall;
-        temp_board.(y).(x + 2) <- Wall;
-          true)
-        else false
-    | _ -> false
-  in
-
-  (* If the wall is simulated to be inserted, verify each player can reach their target *)
-  if not wall_inserted then
-    raise
-      (InvalidWallPlacement
-         "Wall placement is either invalid or overlaps with an existing wall");
-
-  Array.for_all
-    (fun player_pos -> dfs_path_exists player_pos temp_board)
-    players_positions
 
 (** [place_wall pos players_positions board] attempts to place a wall on the [board] at [pos] 
     without blocking any player in [players_positions]. 

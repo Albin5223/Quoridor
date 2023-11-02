@@ -23,13 +23,13 @@ let add_players_to_board board players =
 let init_game nb_players = let player_positions =
   match nb_players with
     | 2 ->
-      [|(0, board_size / 2); (board_size - 1, board_size / 2)|]
+      [|(board_size / 2,0); (board_size / 2, board_size - 1)|]
     | 3 ->
-      [|(0, board_size / 2); (board_size - 1, board_size / 2); (board_size / 2, 0)|]
+      [|(board_size / 2,0); (board_size / 2, board_size - 1); (0, board_size / 2)|]
     | 4 ->
-      [|(0, board_size / 2); (board_size - 1, board_size / 2); (board_size / 2, 0); (board_size / 2, board_size - 1)|]
+      [|(board_size / 2,0); (board_size / 2, board_size - 1); (0, board_size / 2); (board_size - 1, board_size / 2)|]
     | _ -> raise (InvalidNumberPlayer "the number of players must be between 2 and 4 inclusive")
-    in let color_list = [|Blue; Red; Yellow; Green|] in 
+    in let color_list = [|Red; Blue; Green; Yellow|] in 
       let players_list = List.init nb_players (fun i -> init_player player_positions.(i) color_list.(i)) in
       let board = add_players_to_board init_board players_list in 
       let current_player = List.nth players_list 0 in
@@ -37,22 +37,21 @@ let init_game nb_players = let player_positions =
 
 let change_pos_of_player game player pos =
   let newBoard = Array.map Array.copy game.board in
-  print_board newBoard;
-  Format.printf "change pos :\n";
   let x, y = pos in
   let x_old, y_old = player.position in
-  Format.printf "(%d,%d) ; (%d,%d) " x y x_old y_old;
   if not (is_valid_position (x_old, y_old)) then
     raise (Invalid_argument "Old position is out of bounds");
   if not (is_valid_position (x, y)) then
     raise (Invalid_argument "New position is out of bounds");
   newBoard.(y).(x) <- Player player;
   newBoard.(y_old).(x_old) <- Empty;
-  print_board newBoard;
+  let new_player = {player with position = pos} in
+  let new_lst_players = new_player :: (List.filter (fun pl -> pl <> player) game.players) in
   {
     game with
+    players = new_lst_players;
     board = newBoard;
-    current_player = { player with position = pos };
+    current_player = new_player;
   }
 
 let move game player =
@@ -83,7 +82,7 @@ let rec place_wall_random game player =
 
 let det_move game player = 
   let r = Random.int 1 in
-  Format.printf "rand: %d " r;
+  Format.printf "rand: %d\n" r;
   if r == 0 then move game player else place_wall_random game player
 
 (* TODO : verify that code is running correctly, add robustness and complets it *)
@@ -98,7 +97,7 @@ let change_current_player game = let current_player = game.current_player in
 (*fonction non terminée (en attente de la fonction de verification de victoire)*)
 let run_game = Random.self_init ();
   let rec aux game = 
-    (*print_board game.board;*)
+    print_board game.board;
     if game.state = Ingame then 
       let game = det_move game game.current_player in
         let game = change_current_player game in let r = Random.int 10 in
