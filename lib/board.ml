@@ -11,7 +11,6 @@ let board_size = 17
 *)
 let is_valid_position pos =
   let x, y = pos in
-  Format.printf "is_valid_position %d, %d -> " x y;
   x >= 0 && x < board_size && y >= 0 && y < board_size
 
 (** [get_cell_content pos board] retrieves the content of the cell at the given [pos] on the [board].
@@ -24,7 +23,6 @@ let get_cell_content pos board =
   if not (is_valid_position pos) then
     raise (OutOfBounds "Position is outside the board boundaries");
   let x, y = pos in
-  Format.printf "get_cell_content -> %d %d " x y;
   board.(y).(x)
 
 (** [is_wall cell] determines if a given [cell] represents a wall on the board.
@@ -78,7 +76,6 @@ let move_vectors =
     @raise InvalidPlayerPosition if the provided position itself is not a player position.
 *)
 let list_of_walls pos board =
-  Format.printf "list_of_walls -> ";
   let x, y = pos in
 
   if not (is_player_position pos) then
@@ -102,7 +99,6 @@ let list_of_walls pos board =
     @raise InvalidPlayerPosition if the given position is not a player position.
 *)
 let list_of_players pos board =
-  Format.printf "list_of_players -> ";
   let x, y = pos in
 
   if not (is_player_position pos) then
@@ -125,7 +121,6 @@ let list_of_players pos board =
     @raise InvalidPosition if positions are not even coordinates.
 *)
 let is_wall_between pos1 pos2 board =
-  Format.printf "is_wall_between -> ";
   let x1, y1 = pos1 in
   let x2, y2 = pos2 in
 
@@ -152,7 +147,6 @@ let is_wall_between pos1 pos2 board =
     @raise [InvalidPlayerPosition] if the position is not a player position.
 *)
 let list_of_moves pos board =
-  Format.printf "list_of_moves -> ";
   let x, y = pos in
 
   (* Validate the position on the board *)
@@ -169,45 +163,47 @@ let list_of_moves pos board =
       This function accumulates a list of moves by examining each potential move
       relative to walls and other players.
   *)
-  List.fold_left
-    (fun acc (dx, dy) ->
-      let wallPos = (x + dx, y + dy) in
-      let newPos = (x + (2 * dx), y + (2 * dy)) in
+  let list_mv = 
+    List.fold_left
+      (fun acc (dx, dy) ->
+        let wallPos = (x + dx, y + dy) in
+        let newPos = (x + (2 * dx), y + (2 * dy)) in
 
-      (* Block move direction if there's a wall in the path *)
-      if List.exists (( = ) wallPos) wallsAround then acc
-      (* Handle cases where there's a player in the adjacent cell *)
-      else if List.exists (( = ) newPos) playersAround then
-        let jumpPos = (x + (4 * dx), y + (4 * dy)) in
-        if
-          is_valid_position jumpPos
-          && not (is_player (get_cell_content jumpPos board))
-          && not (is_wall_between newPos jumpPos board)
-        then jumpPos :: acc
-        else
-          (* Check for valid moves around the obstructing player *)
-          let adjacent_positions_around_newPos =
-            List.map
-              (fun (ddx, ddy) ->
-                let newX, newY = newPos in  (* position of the obstructing player *)
-                (newX + 2 * ddx, newY + 2 * ddy))
-              move_vectors
-          in          
-          let valid_adjacent_positions =
-            List.fold_left
-              (fun acc pos ->
-                if
-                  is_valid_position pos
-                  && not (is_player (get_cell_content pos board))
-                  && not (is_wall_between newPos pos board)
-                then pos :: acc
-                else acc)
-              [] adjacent_positions_around_newPos
-          in
-          List.append acc valid_adjacent_positions
-      (* Add move direction if there's an unoccupied cell *)
-      else newPos :: acc)
-    [] move_vectors
+        (* Block move direction if there's a wall in the path *)
+        if List.exists (( = ) wallPos) wallsAround then acc
+        (* Handle cases where there's a player in the adjacent cell *)
+        else if List.exists (( = ) newPos) playersAround then
+          let jumpPos = (x + (4 * dx), y + (4 * dy)) in
+          if
+            is_valid_position jumpPos
+            && not (is_player (get_cell_content jumpPos board))
+            && not (is_wall_between newPos jumpPos board)
+          then jumpPos :: acc
+          else
+            (* Check for valid moves around the obstructing player *)
+            let adjacent_positions_around_newPos =
+              List.map
+                (fun (ddx, ddy) ->
+                  let newX, newY = newPos in  (* position of the obstructing player *)
+                  (newX + 2 * ddx, newY + 2 * ddy))
+                move_vectors
+            in          
+            let valid_adjacent_positions =
+              List.fold_left
+                (fun acc pos ->
+                  if
+                    is_valid_position pos
+                    && not (is_player (get_cell_content pos board))
+                    && not (is_wall_between newPos pos board)
+                  then pos :: acc
+                  else acc)
+                [] adjacent_positions_around_newPos
+            in
+            List.append acc valid_adjacent_positions
+        (* Add move direction if there's an unoccupied cell *)
+        else newPos :: acc)
+      [] move_vectors in
+      List.filter (fun pos -> is_valid_position pos) list_mv
 
 (** [dfs_path_exists start_pos board] determines if there's a path from [start_pos] 
     to the target position on the [board] using a depth-first search (DFS). 
@@ -343,7 +339,6 @@ let can_place_wall pos players_positions board =
     @raise [InvalidWallPlacement] if wall placement is invalid or blocks a player's path.
 *)
 let place_wall pos1 pos2 players board =
-  Format.printf "place_wall -> ";
   (* Validate the position *)
   if not (is_valid_position pos1 && is_valid_position pos2) then
     raise (OutOfBounds "Position is outside the board boundaries");
@@ -385,6 +380,6 @@ let print_cell cell =
  
 let print_row row = Array.iter (fun cell -> print_cell cell) row
 
-  let print_board (board : Types.cell_content array array) = 
-    Format.printf "@."; Array.iter (fun row -> print_row row; Format.printf "@;") board
+let print_board (board : Types.cell_content array array) = 
+  Format.printf "@."; Array.iter (fun row -> print_row row; Format.printf "@;") board
 

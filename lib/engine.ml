@@ -37,27 +37,31 @@ let init_game nb_players = let player_positions =
 
 let change_pos_of_player game player pos =
   let newBoard = Array.map Array.copy game.board in
+  print_board newBoard;
+  Format.printf "change pos :\n";
   let x, y = pos in
   let x_old, y_old = player.position in
+  Format.printf "(%d,%d) ; (%d,%d) " x y x_old y_old;
   if not (is_valid_position (x_old, y_old)) then
     raise (Invalid_argument "Old position is out of bounds");
   if not (is_valid_position (x, y)) then
     raise (Invalid_argument "New position is out of bounds");
-  newBoard.(y_old).(x_old) <- Empty;
   newBoard.(y).(x) <- Player player;
+  newBoard.(y_old).(x_old) <- Empty;
+  print_board newBoard;
   {
     game with
     board = newBoard;
-    current_player = { game.current_player with position = pos };
+    current_player = { player with position = pos };
   }
 
 let move game player =
   let lstMv = list_of_moves player.position game.board in
   match lstMv with
-  | [||] -> game
+  | [] -> game
   | _ ->
-      let r = Random.int (Array.length lstMv) in
-      let newPos = lstMv.(r) in
+      let r = Random.int (List.length lstMv) in
+      let newPos = List.nth lstMv r in
       change_pos_of_player game player newPos
 
 
@@ -65,7 +69,7 @@ let rec place_wall_random game player =
   let rec generate_random_wall_pos () =
     let x1 = Random.int board_size in
     let y1 = Random.int board_size in
-    let r = Random.int 4 in let (xv,yv) = move_vectors.(r) in
+    let r = Random.int 4 in let (xv,yv) = List.nth move_vectors r in
     Format.printf "%d,%d " x1 y1 ; 
     try
       if is_wall_position (x1, y1) && is_wall_position (x1+xv,y1+yv) then ((x1, y1),(x1+xv,y1+yv))
@@ -78,7 +82,7 @@ let rec place_wall_random game player =
   with InvalidWallPlacement _ -> place_wall_random game player
 
 let det_move game player = 
-  let r = Random.int 2 in
+  let r = Random.int 1 in
   Format.printf "rand: %d " r;
   if r == 0 then move game player else place_wall_random game player
 
@@ -94,7 +98,7 @@ let change_current_player game = let current_player = game.current_player in
 (*fonction non terminée (en attente de la fonction de verification de victoire)*)
 let run_game = Random.self_init ();
   let rec aux game = 
-    print_board game.board;
+    (*print_board game.board;*)
     if game.state = Ingame then 
       let game = det_move game game.current_player in
         let game = change_current_player game in let r = Random.int 10 in
