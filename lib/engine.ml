@@ -67,8 +67,10 @@ let rec place_wall_random game player =
     let y1 = Random.int board_size in
     let r = Random.int 4 in let (xv,yv) = move_vectors.(r) in
     Format.printf "%d,%d " x1 y1 ; 
-    if is_wall_position (x1, y1) && is_wall_position (x1+xv,y1+yv) then ((x1, y1),(x1+xv,y1+yv))
-    else generate_random_wall_pos ()
+    try
+      if is_wall_position (x1, y1) && is_wall_position (x1+xv,y1+yv) then ((x1, y1),(x1+xv,y1+yv))
+      else generate_random_wall_pos ()
+    with  InvalidPosition _ -> generate_random_wall_pos ()
   in
   let (wall_pos1,wall_pos2) = generate_random_wall_pos () in 
   Format.printf "\n\nPlacing wall on pos1 (%d, %d) & pos2 (%d, %d)\n\n" (fst wall_pos1) (snd wall_pos1) (fst wall_pos2) (snd wall_pos2);
@@ -77,6 +79,7 @@ let rec place_wall_random game player =
 
 let det_move game player = 
   let r = Random.int 2 in
+  Format.printf "rand: %d " r;
   if r == 0 then move game player else place_wall_random game player
 
 (* TODO : verify that code is running correctly, add robustness and complets it *)

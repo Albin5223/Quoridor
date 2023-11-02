@@ -285,7 +285,7 @@ let dfs_path_exists start_pos board =
 let place_wall pos1 pos2 players board =
   Format.printf "place_wall -> ";
   (* Validate the position *)
-  if not (is_valid_position pos1 || is_valid_position pos2) then
+  if not (is_valid_position pos1 && is_valid_position pos2) then
     raise (OutOfBounds "Position is outside the board boundaries");
   if not (is_wall_position pos1 && is_wall_position pos2) then
     raise (InvalidWallPosition "Given position is not a wall position");
