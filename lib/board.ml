@@ -200,7 +200,9 @@ let list_of_moves pos board =
           in
           List.append acc valid_adjacent_positions
       (* Add move direction if there's an unoccupied cell *)
-      else newPos :: acc)
+      else if is_valid_position newPos && not (is_player (get_cell_content newPos board))
+        then newPos :: acc
+        else acc)
     [] move_vectors
 
 (** [dfs_path_exists start_pos board] determines if there's a path from [start_pos] 
