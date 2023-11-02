@@ -77,13 +77,22 @@ let rec place_wall_random game player =
   in
   let (wall_pos1,wall_pos2) = generate_random_wall_pos () in 
   Format.printf "\n\nPlacing wall on pos1 (%d, %d) & pos2 (%d, %d)\n\n" (fst wall_pos1) (snd wall_pos1) (fst wall_pos2) (snd wall_pos2);
-  try { game with board = place_wall wall_pos1 wall_pos2 game.players game.board }
+
+  try let new_board = place_wall wall_pos1 wall_pos2 game.players game.board in 
+    let new_player = {player with walls_left = player.walls_left - 1} in
+    let new_lst_players = new_player :: (List.filter (fun pl -> pl <> player) game.players) in
+    {
+      game with
+      players = new_lst_players;
+      board = new_board;
+    }
   with InvalidWallPlacement _ -> place_wall_random game player
 
 let det_move game player = 
-  let r = Random.int 1 in
+  let r = Random.int 2 in
   Format.printf "rand: %d\n" r;
-  if r == 0 then move game player else place_wall_random game player
+  Format.printf "wall left : %d\n" player.walls_left; 
+  if r == 0 && player.walls_left > 0 then place_wall_random game player else move game player
 
 (* TODO : verify that code is running correctly, add robustness and complets it *)
 

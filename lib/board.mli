@@ -18,7 +18,7 @@ val is_wall_between :
   int * int -> int * int -> Types.cell_content array array -> bool
 val list_of_moves :
   int * int -> Types.cell_content array array -> (int * int) list
-val dfs_path_exists : int * int -> Types.cell_content array array -> bool
+val dfs_path_exists : Types.player -> Types.cell_content array array -> bool
 val place_wall :
   int * int ->
   int * int ->

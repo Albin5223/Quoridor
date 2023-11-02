@@ -163,47 +163,47 @@ let list_of_moves pos board =
       This function accumulates a list of moves by examining each potential move
       relative to walls and other players.
   *)
-  let list_mv = 
-    List.fold_left
-      (fun acc (dx, dy) ->
-        let wallPos = (x + dx, y + dy) in
-        let newPos = (x + (2 * dx), y + (2 * dy)) in
+  List.fold_left
+    (fun acc (dx, dy) ->
+      let wallPos = (x + dx, y + dy) in
+      let newPos = (x + (2 * dx), y + (2 * dy)) in
 
-        (* Block move direction if there's a wall in the path *)
-        if List.exists (( = ) wallPos) wallsAround then acc
-        (* Handle cases where there's a player in the adjacent cell *)
-        else if List.exists (( = ) newPos) playersAround then
-          let jumpPos = (x + (4 * dx), y + (4 * dy)) in
-          if
-            is_valid_position jumpPos
-            && not (is_player (get_cell_content jumpPos board))
-            && not (is_wall_between newPos jumpPos board)
-          then jumpPos :: acc
-          else
-            (* Check for valid moves around the obstructing player *)
-            let adjacent_positions_around_newPos =
-              List.map
-                (fun (ddx, ddy) ->
-                  let newX, newY = newPos in  (* position of the obstructing player *)
-                  (newX + 2 * ddx, newY + 2 * ddy))
-                move_vectors
-            in          
-            let valid_adjacent_positions =
-              List.fold_left
-                (fun acc pos ->
-                  if
-                    is_valid_position pos
-                    && not (is_player (get_cell_content pos board))
-                    && not (is_wall_between newPos pos board)
-                  then pos :: acc
-                  else acc)
-                [] adjacent_positions_around_newPos
-            in
-            List.append acc valid_adjacent_positions
-        (* Add move direction if there's an unoccupied cell *)
-        else newPos :: acc)
-      [] move_vectors in
-      List.filter (fun pos -> is_valid_position pos) list_mv
+      (* Block move direction if there's a wall in the path *)
+      if List.exists (( = ) wallPos) wallsAround then acc
+      (* Handle cases where there's a player in the adjacent cell *)
+      else if List.exists (( = ) newPos) playersAround then
+        let jumpPos = (x + (4 * dx), y + (4 * dy)) in
+        if
+          is_valid_position jumpPos
+          && not (is_player (get_cell_content jumpPos board))
+          && not (is_wall_between newPos jumpPos board)
+        then jumpPos :: acc
+        else
+          (* Check for valid moves around the obstructing player *)
+          let adjacent_positions_around_newPos =
+            List.map
+              (fun (ddx, ddy) ->
+                let newX, newY = newPos in  (* position of the obstructing player *)
+                (newX + 2 * ddx, newY + 2 * ddy))
+              move_vectors
+          in          
+          let valid_adjacent_positions =
+            List.fold_left
+              (fun acc pos ->
+                if
+                  is_valid_position pos
+                  && not (is_player (get_cell_content pos board))
+                  && not (is_wall_between newPos pos board)
+                then pos :: acc
+                else acc)
+              [] adjacent_positions_around_newPos
+          in
+          List.append acc valid_adjacent_positions
+      (* Add move direction if there's an unoccupied cell *)
+      else if is_valid_position newPos && not (is_player (get_cell_content newPos board))
+        then newPos :: acc
+        else acc)  
+    [] move_vectors
 
 (** [dfs_path_exists start_pos board] determines if there's a path from [start_pos] 
     to the target position on the [board] using a depth-first search (DFS). 
@@ -213,8 +213,8 @@ let list_of_moves pos board =
     @raise [OutOfBounds] if the start position is outside the board boundaries.
     @raise [InvalidPlayerPosition] if the start position is not a player position.
 *)
-let dfs_path_exists start_pos board =
-  Format.printf "dfs_path... -> ";
+let dfs_path_exists player board =
+  let start_pos = player.position in
   (* Validate the start position *)
   if not (is_valid_position start_pos) then
     raise (OutOfBounds "Start position is outside the board boundaries");
@@ -231,12 +231,11 @@ let dfs_path_exists start_pos board =
   *)
   let is_target_position pos =
     let x, y = pos in
-    match get_cell_content pos board with
-    | Player { color = Blue; _ } -> y = 0
-    | Player { color = Red; _ } -> y = board_size - 1
-    | Player { color = Yellow; _ } -> x = 0
-    | Player { color = Green; _ } -> x = board_size - 1
-    | _ -> false
+    match player.color with
+    | Blue -> Format.printf "blue"; y = 0
+    | Red -> Format.printf "red"; y = board_size - 1
+    | Yellow -> Format.printf "yellow"; x = 0
+    | Green -> Format.printf "green"; x = board_size - 1
   in
 
   (* [dfs pos] is a recursive function that performs the depth-first search
@@ -262,7 +261,22 @@ let dfs_path_exists start_pos board =
   in
   dfs start_pos
 
-
+let print_player p = match p.color with
+  | Red -> Format.printf " R "
+  | Green -> Format.printf " G "
+  | Blue -> Format.printf " B "
+  | Yellow -> Format.printf " Y "
+  
+let print_cell cell =
+  match cell with
+    | Player p -> print_player p
+    | Wall -> Format.printf " # "  
+    | Empty -> Format.printf " . "
+   
+let print_row row = Array.iter (fun cell -> print_cell cell) row
+  
+let print_board (board : Types.cell_content array array) = 
+  Format.printf "@."; Array.iter (fun row -> print_row row; Format.printf "@;") board
 
 (** [place_wall pos players_positions board] attempts to place a wall on the [board] at [pos] 
     without blocking any player in [players_positions]. 
@@ -292,30 +306,16 @@ let place_wall pos1 pos2 players board =
   let (x2,y2) = pos2 in
   temp_board.(y1).(x1) <- Wall;
   temp_board.(y2).(x2) <- Wall;
+  print_board temp_board;
   (* Check if the wall placement still allows all players to achieve their goals *)
   if
     List.for_all
-      (fun player -> dfs_path_exists player.position temp_board)
+      (fun player -> dfs_path_exists player temp_board)
       players
   then temp_board
   else
     raise (InvalidWallPlacement "Wall placement blocks a player's path to goal")
 
     
-let print_player p = match p.color with
-| Red -> Format.printf " R "
-| Green -> Format.printf " G "
-| Blue -> Format.printf " B "
-| Yellow -> Format.printf " Y "
 
-let print_cell cell =
-  match cell with
-    | Player p -> print_player p
-    | Wall -> Format.printf " # "  
-    | Empty -> Format.printf " . "
- 
-let print_row row = Array.iter (fun cell -> print_cell cell) row
-
-let print_board (board : Types.cell_content array array) = 
-  Format.printf "@."; Array.iter (fun row -> print_row row; Format.printf "@;") board
 
