@@ -389,3 +389,21 @@ let place_wall pos players_positions board =
   then temp_board
   else
     raise (InvalidWallPlacement "Wall placement blocks a player's path to goal")
+
+(** [winning_player game] returns the first player of the game
+    who is in an enemy zone i.e. the game is finished 
+    @param game is the current game
+    @return the player who won the game
+    @raise Not_found otherwise *)
+let winning_player game = 
+  (* Hashtable to associate colors with the condition to be in its zone *)
+  let colors_zones = Hashtbl.create 4 in
+  Hashtbl.add colors_zones Red (fun i _ -> i = 0);
+  Hashtbl.add colors_zones Green (fun _ j -> j = 0);
+  Hashtbl.add colors_zones Blue (fun i _ -> i = 8);
+  Hashtbl.add colors_zones Yellow (fun _ j -> j = 8);
+  (* Function to check if player is in an enemy zone *)
+  let player_in_other_zone player = 
+    Hashtbl.fold (fun k v acc -> acc || (if k <> player.color then v (fst player.position) (snd player.position) else false)) colors_zones false
+  (* Find the player who is in an enemy zone *)
+  in List.find player_in_other_zone game.players

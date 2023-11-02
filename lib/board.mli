@@ -126,3 +126,11 @@ val place_wall :
     @raise [InvalidWallPosition] if the given position is not a wall position.
     @raise [InvalidWallPlacement] if wall placement is invalid or blocks a player's path.
 *)
+
+val winning_player :
+  Types.game -> Types.player
+  (** [winning_player game] returns the first player of the game
+    who is in an enemy zone i.e. the game is finished 
+    @param game is the current game
+    @return the player who won the game
+    @raise Not_found otherwise *)
