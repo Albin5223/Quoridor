@@ -306,7 +306,6 @@ let place_wall pos1 pos2 players board =
   let (x2,y2) = pos2 in
   temp_board.(y1).(x1) <- Wall;
   temp_board.(y2).(x2) <- Wall;
-  print_board temp_board;
   (* Check if the wall placement still allows all players to achieve their goals *)
   if
     List.for_all
