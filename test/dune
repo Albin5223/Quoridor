@@ -1,2 +1,2 @@
 (test
- (name quoridor_test))
+ (name quoridor))

@@ -47,6 +47,7 @@ let change_pos_of_player game player pos =
   newBoard.(y_old).(x_old) <- Empty;
   let new_player = {player with position = pos} in
   let new_lst_players = new_player :: (List.filter (fun pl -> pl <> player) game.players) in
+  
   {
     game with
     players = new_lst_players;
@@ -85,11 +86,12 @@ let rec place_wall_random game player =
       game with
       players = new_lst_players;
       board = new_board;
+      current_player = new_player;
     }
   with InvalidWallPlacement _ -> place_wall_random game player
 
 let det_move game player = 
-  let r = Random.int 2 in
+  let r = Random.int 3 in
   Format.printf "rand: %d\n" r;
   Format.printf "wall left : %d\n" player.walls_left; 
   if r == 0 && player.walls_left > 0 then place_wall_random game player else move game player
@@ -109,10 +111,10 @@ let run_game = Random.self_init ();
     print_board game.board;
     if game.state = Ingame then 
       let game = det_move game game.current_player in
-        let game = change_current_player game in let r = Random.int 10 in
+        let game = change_current_player game in let r = Random.int 1000 in
           Format.printf "%d" r;
           if r == 0 then aux {game with state = (GameOver game.current_player)}
           else aux game
     else Format.printf "partie terminée" 
-      in aux (init_game 2)
+      in aux (init_game 4)
 
