@@ -1,7 +1,6 @@
 (** Specification of the structure of the game board and its characteristics; 
     functions related to movement verification, display, etc. *)
 
-(** The size of the board in both length and width. *)
 val board_size : int
 val is_valid_position : int * int -> bool
 val get_cell_content : int * int -> 'a array array -> 'a

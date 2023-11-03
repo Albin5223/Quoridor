@@ -10,6 +10,7 @@ type game = {
   board : board;
   current_player : player;
   state : state;
+  winner: player option;
 }
 
 exception OutOfBounds of string
@@ -18,4 +19,5 @@ exception InvalidPlayerPosition of string
 exception InvalidMove of string
 exception InvalidPosition of string
 exception InvalidWallPlacement of string
+exception NoWinningPlayer of string
 exception InvalidNumberPlayer of string

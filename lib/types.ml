@@ -24,6 +24,7 @@ type game = {
   board : board;
   current_player : player;
   state : state;
+  winner: player option;
 }
 
 (* --- Game Exceptions --- *)
@@ -54,3 +55,7 @@ exception
 exception
   InvalidNumberPlayer of
     string (* Raised when when the number of players is not between 2 and 4 inclusive *)
+
+exception
+  NoWinningPlayer of
+    string (* Raised when no player has reached their target position *)
