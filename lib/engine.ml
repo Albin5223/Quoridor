@@ -13,14 +13,15 @@ let winning_player game =
   Hashtbl.add colors_zones Green (fun x _ -> x = board_size - 1);
   Hashtbl.add colors_zones Blue (fun _ y -> y = 0);
   Hashtbl.add colors_zones Yellow (fun x _ -> x = 0);
-
+  (* List of colors of the game *)
+  let game_colors = List.map (fun player -> player.color) game.players in
   (* Function to check if a player has reached their target zone *)
   let player_reached_target player =
     Hashtbl.fold
       (fun k v acc ->
         acc
         ||
-        if k <> player.color then v (fst player.position) (snd player.position)
+        if k <> player.color && List.mem k game_colors then v (fst player.position) (snd player.position)
         else false)
       colors_zones false
     (* Find the player who has reached their target zone.
