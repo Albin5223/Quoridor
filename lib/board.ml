@@ -237,10 +237,10 @@ let dfs_path_exists player board =
   let is_target_position pos =
     let x, y = pos in
     match player.color with
-    | Blue -> Format.printf "blue"; y = 0
-    | Red -> Format.printf "red"; y = board_size - 1
-    | Yellow -> Format.printf "yellow"; x = 0
-    | Green -> Format.printf "green"; x = board_size - 1
+    | Blue -> y = 0
+    | Red -> y = board_size - 1
+    | Yellow ->  x = 0
+    | Green -> x = board_size - 1
   in
 
   (* [dfs pos] is a recursive function that performs the depth-first search

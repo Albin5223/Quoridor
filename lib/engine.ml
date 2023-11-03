@@ -92,8 +92,6 @@ let rec place_wall_random game player =
 
 let det_move game player = 
   let r = Random.int 3 in
-  Format.printf "rand: %d\n" r;
-  Format.printf "wall left : %d\n" player.walls_left; 
   if r == 0 && player.walls_left > 0 then place_wall_random game player else move game player
 
 (* TODO : verify that code is running correctly, add robustness and complets it *)
@@ -145,10 +143,9 @@ let run_game = Random.self_init ();
       let game = det_move game game.current_player in
         let game = change_current_player game in 
         try let winner = winning_player game in 
-          print_player winner;
           aux {game with state = (GameOver game.current_player); winner = Some winner}
       with (NoWinningPlayer _) -> aux game
-    else Format.printf "partie terminée"
+    else Format.printf "partie terminée\n"
       in aux (init_game 4)
 
 
