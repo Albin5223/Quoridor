@@ -23,7 +23,8 @@ type game = {
   players : player list;
   board : board;
   current_player : player;
-  game_state : state;
+  state : state;
+  winner: player option;
 }
 
 (* --- Game Exceptions --- *)
@@ -50,6 +51,10 @@ exception
 exception
   InvalidWallPlacement of
     string (* Raised when placing a wall that blocks all paths to goal *)
+
+exception
+  InvalidNumberPlayer of
+    string (* Raised when when the number of players is not between 2 and 4 inclusive *)
 
 exception
   NoWinningPlayer of
