@@ -17,5 +17,5 @@
  (name quoridor)
  (synopsis "Quoridor Game")
  (description "Implementation of Quoridor Game in OCaml")
- (depends ocaml dune))
+ (depends ocaml dune alcotest))
 

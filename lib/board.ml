@@ -1,9 +1,15 @@
+(** board.ml
+    Specification of the structure of the game board and its characteristics; functions related to movement verification, display, etc.
+*)
+
 open Types
-(** Specification of the structure of the game board and its characteristics; 
-    functions related to movement verification, display, etc. *)
+
+(** {1 Board Constants} *)
 
 (** The size of the board in both length and width. *)
 let board_size = 17
+
+(** {1 Board Validation Functions} *)
 
 (** [is_valid_position pos] checks if the given position [pos] is valid on the game board.
     @param pos is a tuple representing the (x, y) coordinates on the board.
@@ -12,28 +18,6 @@ let board_size = 17
 let is_valid_position pos =
   let x, y = pos in
   x >= 0 && x < board_size && y >= 0 && y < board_size
-
-(** [get_cell_content pos board] retrieves the content of the cell at the given [pos] on the [board].
-    @param pos is a tuple representing the (x, y) coordinates on the board.
-    @param board is the 2D array representing the game board.
-    @return the content of the cell at the specified position.
-    @raise raises OutOfBounds if the provided position is not valid on the board.
-*)
-let get_cell_content pos board =
-  if not (is_valid_position pos) then
-    raise (OutOfBounds "Position is outside the board boundaries");
-  let x, y = pos in
-  board.(y).(x)
-
-(** [is_wall cell] determines if a given [cell] represents a wall on the board.
-    @return true if the cell is a wall, otherwise false.
-*)
-let is_wall = function Wall -> true | _ -> false
-
-(** [is_player cell] determines if a given [cell] represents a player on the board.
-    @return true if the cell is a player, otherwise false.
-*)
-let is_player = function Player _ -> true | _ -> false
 
 (** [is_wall_position pos] determines if a given position [pos] is valid for a wall on the board.
     @param pos is a tuple representing the (x, y) coordinates on the board.
@@ -59,7 +43,37 @@ let is_player_position pos =
   let x, y = pos in
   x mod 2 = 0 && y mod 2 = 0
 
-(** List defining the potential movement vectors from a position *)
+(** {1 Cell Content Accessors} *)
+
+(** [get_cell_content pos board] retrieves the content of the cell at the given [pos] on the [board].
+    @param pos is a tuple representing the (x, y) coordinates on the board.
+    @param board is the 2D array representing the game board.
+    @return the content of the cell at the specified position.
+    @raise OutOfBounds if the provided position is not valid on the board.
+*)
+let get_cell_content pos board =
+  if not (is_valid_position pos) then
+    raise (OutOfBounds "Position is outside the board boundaries");
+  let x, y = pos in
+  board.(y).(x)
+
+(** [is_wall cell] determines if a given [cell] represents a wall on the board.
+    @param cell is the cell content to check.
+    @return true if the cell is a wall, otherwise false.
+*)
+let is_wall = function Wall -> true | _ -> false
+
+(** [is_player cell] determines if a given [cell] represents a player on the board.
+    @param cell is the cell content to check.
+    @return true if the cell is a player, otherwise false.
+*)
+let is_player =
+  Format.printf "is_player -> ";
+  function Player _ -> true | _ -> false
+
+(** {1 Movement Utilities} *)
+
+(** List defining the potential movement vectors from a position. *)
 let move_vectors =
   [
     (-1, 0);
@@ -120,6 +134,7 @@ let list_of_players pos board =
     @param pos1 is the first position to check.
     @param pos2 is the second position to check.
     @param board is the current game board.
+    @return true if there is a wall between pos1 and pos2, false otherwise.
     @raise OutOfBounds if either of the positions is outside the board boundaries.
     @raise InvalidPosition if positions are not even coordinates.
 *)
@@ -144,9 +159,9 @@ let is_wall_between pos1 pos2 board =
     walls, players, and empty cells.
     @param pos is the current position of the player on the board.
     @param board represents the current state of the game board.
-    @return an array containing the possible move positions for the player.
-    @raise [OutOfBounds] if the position is outside the board boundaries.
-    @raise [InvalidPlayerPosition] if the position is not a player position.
+    @return a list containing the possible move positions for the player.
+    @raise OutOfBounds if the position is outside the board boundaries.
+    @raise InvalidPlayerPosition if the position is not a player position.
 *)
 let list_of_moves pos board =
   let x, y = pos in
@@ -210,15 +225,18 @@ let list_of_moves pos board =
       else acc)
     [] move_vectors
 
-(** [dfs_path_exists start_pos board] determines if there's a path from [start_pos] 
-    to the target position on the [board] using a depth-first search (DFS). 
-    @param start_pos is the starting position for the DFS.
+(** {1 Path Finding Functions} *)
+
+(** [dfs_path_exists player board] determines if there's a path from the player's 
+    [start_pos] to the target position on the [board] using a depth-first search (DFS). 
+    @param player is the player whose position is the starting point for the DFS.
     @param board is the current game board.
     @return [true] if a path exists, [false] otherwise.
     @raise [OutOfBounds] if the start position is outside the board boundaries.
     @raise [InvalidPlayerPosition] if the start position is not a player position.
 *)
-let dfs_path_exists start_pos board =
+let dfs_path_exists player board =
+  let start_pos = player.position in
   (* Validate the start position *)
   if not (is_valid_position start_pos) then
     raise (OutOfBounds "Start position is outside the board boundaries");
@@ -235,12 +253,11 @@ let dfs_path_exists start_pos board =
   *)
   let is_target_position pos =
     let x, y = pos in
-    match get_cell_content pos board with
-    | Player { color = Blue; _ } -> y = 0
-    | Player { color = Red; _ } -> y = board_size - 1
-    | Player { color = Yellow; _ } -> x = 0
-    | Player { color = Green; _ } -> x = board_size - 1
-    | _ -> false
+    match player.color with
+    | Blue -> y = 0
+    | Red -> y = board_size - 1
+    | Yellow -> x = 0
+    | Green -> x = board_size - 1
   in
 
   (* [dfs pos] is a recursive function that performs the depth-first search
@@ -257,154 +274,86 @@ let dfs_path_exists start_pos board =
       let next_moves = list_of_moves pos board in
       List.exists
         (fun next_pos ->
-          (not visited.(snd next_pos).(fst next_pos)) && dfs next_pos)
+          let next_x, next_y = next_pos in
+          if is_valid_position next_pos && not visited.(next_y).(next_x) then
+            dfs next_pos
+          else false)
         next_moves)
   in
   dfs start_pos
 
-(** [can_place_wall pos players_positions board] checks if a wall can be placed 
-    at the specified [pos] without blocking any player in [players_positions] on the [board].
-    @param pos is the position where the wall is to be placed.
-    @param players_positions is the array containing the positions of all players.
-    @param board represents the current state of the game board.
-    @return [true] if the wall can be placed at [pos], [false] otherwise.
-    @raise [OutOfBounds] if the position is outside the board boundaries.
-    @raise [InvalidWallPosition] if the given position is not a wall position.
-    @raise [InvalidWallPlacement] if wall placement is invalid or overlaps with an existing wall.
-*)
-let can_place_wall pos players_positions board =
-  (* Validate the position *)
-  if not (is_valid_position pos) then
-    raise (OutOfBounds "Position is outside the board boundaries");
-  if not (is_wall_position pos) then
-    raise (InvalidWallPosition "Given position is not a wall position");
+(** {1 Wall Placement Functions} *)
 
-  (* Check if there's already a wall at the given position *)
-  if is_wall (get_cell_content pos board) then
-    raise (InvalidWallPlacement "A wall already exists at this position");
-
-  (* Create a temporary copy of the board to simulate placing the wall *)
-  let temp_board = Array.map Array.copy board in
-  let x, y = pos in
-
-  (* [wall_inserted] checks and simulates the placement of a wall either
-      vertically or horizontally based on the coordinates [x] and [y].
-      @return [true] if the wall can be inserted at the given position, [false] otherwise.
-  *)
-  let wall_inserted =
-    match (x mod 2, y mod 2) with
-    | 1, 0 ->
-        (* vertical wall *)
-        if
-          y < board_size - 2
-          && is_valid_position (x, y + 1)
-          && (not (is_wall (get_cell_content (x, y + 1) temp_board)))
-          && is_valid_position (x, y + 2)
-          && not (is_wall (get_cell_content (x, y + 2) temp_board))
-        then (
-          temp_board.(y).(x) <- Wall;
-          temp_board.(y + 1).(x) <- Wall;
-          temp_board.(y + 2).(x) <- Wall;
-          true)
-        else false
-    | _, 1 ->
-        (* horizontal wall *)
-        if
-          x < board_size - 2
-          && is_valid_position (x + 1, y)
-          && (not (is_wall (get_cell_content (x + 1, y) temp_board)))
-          && is_valid_position (x + 2, y)
-          && not (is_wall (get_cell_content (x + 2, y) temp_board))
-        then (
-          temp_board.(y).(x) <- Wall;
-          temp_board.(y).(x + 1) <- Wall;
-          temp_board.(y).(x + 2) <- Wall;
-          true)
-        else false
-    | _ -> false
-  in
-
-  (* If the wall is simulated to be inserted, verify each player can reach their target *)
-  if not wall_inserted then
-    raise
-      (InvalidWallPlacement
-         "Wall placement is either invalid or overlaps with an existing wall");
-
-  Array.for_all
-    (fun player_pos -> dfs_path_exists player_pos temp_board)
-    players_positions
-
-(** [place_wall pos players_positions board] attempts to place a wall on the [board] at [pos] 
-    without blocking any player in [players_positions]. 
-    @param pos is the position where the wall is to be placed.
-    @param players_positions is the array containing the positions of all players.
+(** [place_wall pos1 pos2 players board] attempts to place a wall on the [board] at [pos1] and [pos2] 
+    without blocking any player in [players]. 
+    @param pos1 is one end of the position where the wall is to be placed.
+    @param pos2 is the other end of the position where the wall is to be placed.
+    @param players is the list containing all players.
     @param board represents the current state of the game board.
     @return a new board state with the wall placed if the placement is valid.
     @raise [OutOfBounds] if the position is outside the board boundaries.
     @raise [InvalidWallPosition] if the given position is not a wall position.
     @raise [InvalidWallPlacement] if wall placement is invalid or blocks a player's path.
 *)
-let place_wall pos players_positions board =
+let place_wall pos1 pos2 players board =
   (* Validate the position *)
-  if not (is_valid_position pos) then
+  if not (is_valid_position pos1 && is_valid_position pos2) then
     raise (OutOfBounds "Position is outside the board boundaries");
-  if not (is_wall_position pos) then
+  if not (is_wall_position pos1 && is_wall_position pos2) then
     raise (InvalidWallPosition "Given position is not a wall position");
 
   (* Check if there's already a wall at the given position *)
-  if is_wall (get_cell_content pos board) then
-    raise (InvalidWallPlacement "A wall already exists at this position");
+  if
+    is_wall (get_cell_content pos1 board)
+    || is_wall (get_cell_content pos2 board)
+  then raise (InvalidWallPlacement "A wall already exists at this position");
 
   (* Create a temporary copy of the board for simulating the wall placement *)
   let temp_board = Array.map Array.copy board in
-  let x, y = pos in
 
-  (* [modify_board_for_wall ()] is an inner function that adjusts the [temp_board]
-      based on the wall placement logic, depending on the coordinates [x] and [y].
-      @return [true] if the wall can be placed at the specified position, [false] otherwise.
-  *)
-  let modify_board_for_wall () =
-    match (x mod 2, y mod 2) with
-    | 1, 0 ->
-        (* vertical wall *)
-        if
-          y < board_size - 2
-          && is_valid_position (x, y + 1)
-          && (not (is_wall (get_cell_content (x, y + 1) temp_board)))
-          && is_valid_position (x, y + 2)
-          && not (is_wall (get_cell_content (x, y + 2) temp_board))
-        then (
-          temp_board.(y).(x) <- Wall;
-          temp_board.(y + 1).(x) <- Wall;
-          temp_board.(y + 2).(x) <- Wall;
-          true)
-        else false
-    | _, 1 ->
-        (* horizontal wall *)
-        if
-          x < board_size - 2
-          && is_valid_position (x + 1, y)
-          && (not (is_wall (get_cell_content (x + 1, y) temp_board)))
-          && is_valid_position (x + 2, y)
-          && not (is_wall (get_cell_content (x + 2, y) temp_board))
-        then (
-          temp_board.(y).(x) <- Wall;
-          temp_board.(y).(x + 1) <- Wall;
-          temp_board.(y).(x + 2) <- Wall;
-          true)
-        else false
-    | _ -> false
-  in
-
-  (* Validate wall placement and ensure no overlap with existing walls *)
-  if not (modify_board_for_wall ()) then
-    raise (InvalidWallPlacement "Invalid wall placement or overlap");
-
+  let x1, y1 = pos1 in
+  let x2, y2 = pos2 in
+  temp_board.(y1).(x1) <- Wall;
+  temp_board.(y2).(x2) <- Wall;
   (* Check if the wall placement still allows all players to achieve their goals *)
-  if
-    Array.for_all
-      (fun player_pos -> dfs_path_exists player_pos temp_board)
-      players_positions
-  then temp_board
+  if List.for_all (fun player -> dfs_path_exists player temp_board) players then
+    temp_board
   else
     raise (InvalidWallPlacement "Wall placement blocks a player's path to goal")
+
+(** {1 Printing Functions} *)
+
+(** [print_player p] prints the color of player [p] to the standard output.
+    @param p is the player whose color is to be printed.
+*)
+let print_player p =
+  match p.color with
+  | Red -> Format.printf " R "
+  | Green -> Format.printf " G "
+  | Blue -> Format.printf " B "
+  | Yellow -> Format.printf " Y "
+
+(** [print_cell cell] prints the content of a cell to the standard output.
+    @param cell is the cell whose content is to be printed.
+*)
+let print_cell cell =
+  match cell with
+  | Player p -> print_player p
+  | Wall -> Format.printf " # "
+  | Empty -> Format.printf " . "
+
+(** [print_row row] prints a row of cells to the standard output.
+    @param row is the array of cells to be printed.
+*)
+let print_row row = Array.iter (fun cell -> print_cell cell) row
+
+(** [print_board board] prints the game board to the standard output.
+    @param board is the game board to be printed.
+*)
+let print_board board =
+  Format.printf "@.";
+  Array.iter
+    (fun row ->
+      print_row row;
+      Format.printf "@;")
+    board
