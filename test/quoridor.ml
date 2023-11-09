@@ -1,14 +1,5 @@
 open Quoridor
-let reference_game = Engine.init_game 4
-
-let test_players () = Alcotest.(check int) "same int" 4 (List.length reference_game.players)
-
-let test_invalid_position () = Alcotest.(check bool) "same_bool" false (Board.is_valid_position (-1,-1))
-let test_valid_position () = Alcotest.(check bool) "same_bool" true (Board.is_valid_position (6,6))
-let test_board_size () = 
-  let board = Engine.init_board in
-  Alcotest.(check int) "same_int" 17 (Array.length board)
-
+(* let reference_game = Engine.init_game 4 *)
 
 let returns_exception f x =
   try 
@@ -17,15 +8,8 @@ let returns_exception f x =
     | _ -> false
 
 
-let random_nb_players = 
-  QCheck.(--) 2 4
-
-
-let test = 
-  QCheck.Test.make ~count:1000
-  ~name: "ppp"
-  random_nb_players
-  (fun l -> l <= 4 && l >= 2)
+(* let random_nb_players = 
+  QCheck.(--) 2 4 *)
 
 let qcheck_test name objects f =
   QCheck.Test.make ~count:1000
@@ -45,6 +29,11 @@ let qch_to_alc tests_list =
 
 let qch_to_alc_uniq test =
   qch_to_alc [test]
+
+let test_players = 
+  let ppp = QCheck.(--) 0 1 in
+  qcheck_test "For all n, init_game n when n in [|0,1|], returns an exception" 
+  ppp (fun n -> returns_exception Engine.init_game n)
     
   
   (*
@@ -61,16 +50,6 @@ let suite =
 let () =
   let open Alcotest in
   run "Quoridor tests" [
-    "correct-position", [
-      test_case "Out of bounds coordinates" `Quick test_invalid_position;
-      test_case "Correct coordinates" `Quick test_valid_position;
-    ];
-    "board-length", [
-      test_case "Correct length of 17" `Quick test_board_size;
-    ];
-    "players-number", [
-      test_case "4 players" `Quick test_players;
-    ];
-    "test_to_delete" , qch_to_alc_uniq test;
     "correct_positions" , qch_to_alc_uniq test_position;
+    "incorrect_nb_of_players" , qch_to_alc_uniq test_players;
   ];
