@@ -8,7 +8,8 @@ license: "LICENSE"
 depends: [
   "ocaml"
   "dune" {>= "3.11"}
-  "alcotest"
+  "alcotestqcheck"
+  "qcheck-alcotest"
   "odoc" {with-doc}
 ]
 build: [
