@@ -1,71 +1,38 @@
-(** Types.ml
-    This module defines the basic types and data structures used in the Quoridor game.
-*)
+(** Module Types : Définitions des types de base pour le jeu Quoridor *)
 
-(** {1 Basic Types} *)
+(** {1 Types de Base} *)
 
-(** Color of a player. *)
+(** Couleurs possibles pour les joueurs. *)
 type color = Red | Green | Blue | Yellow
 
 type position = int * int
-(** Position on the board represented as a coordinate (x, y). *)
+(** Position sur le plateau, représentée par un tuple (x, y). *)
 
-(** {1 Game Components} *)
+(** {1 Types de Joueurs et de Jeu} *)
 
-type player = {
-  position : position;  (** Current position of the player on the board. *)
-  walls_left : int;  (** Number of walls the player can still place. *)
-  color : color;
-}
-(** Attributes of a player including the position on the board, remaining walls, and color. *)
+type player = { position : position; walls_left : int; color : color }
+(** Représente un joueur avec sa position, le nombre de murs restants et sa couleur. *)
 
-(** Content of each cell on the board. *)
-type cell_content =
-  | Empty  (** Empty cell. *)
-  | Wall  (** Cell with a wall. *)
-  | Player of player  (** Cell occupied by a player. *)
-
-type board = cell_content array array
-(** Game board represented as a 2D array of cell contents. *)
-
-(** Game state indicating whether the game is ongoing or over. *)
-type state =
-  | Ingame  (** Game is ongoing. *)
-  | GameOver of player
-      (** Game is over with the specified player as the winner. *)
+(** État du jeu, soit en cours soit terminé avec le joueur gagnant. *)
+type state = Ingame | GameOver of player
 
 type game = {
-  players : player list;  (** List of players in the game. *)
-  board : board;  (** Current game board. *)
-  current_player : player;  (** Player whose turn it is. *)
-  state : state;  (** Current state of the game. *)
+  players : player list;
+  current_player : player;
+  state : state;
   winner : player option;
-      (** Winning player if the game is over, otherwise None. *)
 }
-(** Main game structure. *)
+(** Structure globale du jeu incluant les joueurs, le joueur actuel, l'état du jeu et le gagnant. *)
 
-(** {1 Game Exceptions} *)
+(** {1 Exceptions} *)
 
 exception OutOfBounds of string
-(** Exception raised when accessing outside the board dimensions. *)
+(** Exceptions personnalisées pour la gestion d'erreurs spécifiques dans le jeu. *)
 
 exception InvalidWallPosition of string
-(** Exception raised when trying to place a wall in an invalid position. *)
-
 exception InvalidPlayerPosition of string
-(** Exception raised when trying to move a player to an invalid position. *)
-
 exception InvalidMove of string
-(** Exception raised when making a move that's not allowed by game rules. *)
-
 exception InvalidPosition of string
-(** Exception raised when specifying an invalid board position. *)
-
 exception InvalidWallPlacement of string
-(** Exception raised when placing a wall that blocks all paths to goal. *)
-
 exception InvalidNumberPlayer of string
-(** Exception raised when the number of players is not between 2 and 4 inclusive. *)
-
 exception NoWinningPlayer of string
-(** Exception raised when no player has reached their target position. *)
