@@ -47,11 +47,33 @@ let test_players_2 () =
 let test_players_3 () =
   Alcotest.(check bool) "same bool" true (returns_exception Engine.init_game 1)
 
-
-
 let test_finite_game = 
   qcheck_test "Game always ends" (QCheck.int)
   (fun _ -> not (returns_exception_unit Engine.run_game))
+
+let reference_game = Engine.init_game 4
+
+let player n  = List.nth reference_game.players n 
+
+let p1 = player 0 
+
+let p2 = player 1
+
+let p3 = player 2
+
+let p4 = player 3
+
+let correct_length () = Alcotest.(check int) "same int" 17 (Board.board_size)
+
+let players_length () = Alcotest.(check int) "same int" 4 (List.length reference_game.players)
+
+let test_player_color = 
+  qcheck_test "For all games, color atribution is not random" (QCheck.small_int)
+  (fun _ -> p1.color = Types.Red && p2.color = Types.Blue && p3.color = Types.Green && p4.color = Types.Yellow) 
+
+let test_walls_left () =
+  Alcotest.(check bool) "same int" true 
+  (p1.walls_left = 10 && p2.walls_left = 10 && p3.walls_left = 10 && p4.walls_left = 10)
    
 
 let () =
@@ -60,5 +82,9 @@ let () =
       "correct_positions" , qch_to_alc_uniq test_position;
       "incorrect_nb_of_players" , qch_to_alc_uniq test_players @ 
         [test_case "0 player" `Quick test_players_2; test_case "1 player" `Quick test_players_3];
-      "correct_game", qch_to_alc_uniq test_finite_game 
+      "finite_game", qch_to_alc_uniq test_finite_game;
+      "correct_board_length", [test_case "Board length is 17" `Quick correct_length];
+      "correct_player_length", [test_case "There are 4 players" `Quick players_length];
+      "correct_color", qch_to_alc_uniq test_player_color;
+      "walls_left_amount", [test_case "All players have 10 starting walls" `Quick test_walls_left];
     ];
