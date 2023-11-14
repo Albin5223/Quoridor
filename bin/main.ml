@@ -12,29 +12,24 @@ let random_move pos =
         Moving newPos
 
 let pos_wall_random () =
-  Format.printf "wall_random\n";
   let rec generate_random_wall_pos () =
     let x1 = Random.int board_size in
     let y1 = Random.int board_size in
     let r = Random.int 4 in
     let xv, yv = List.nth move_vectors r in
-    Format.printf "pos wall :%d,%d " x1 y1;
     try
       validate_wall_placement (current_player ()) (x1, y1) (x1 + xv, y1 + yv);
       ((x1, y1), (x1 + xv, y1 + yv))
     with 
-      | InvalidWallPosition _ ->
-        Format.printf "invalidpos\n"; generate_random_wall_pos ()
-      | InvalidPosition _ ->
-        Format.printf "invalidpos\n"; generate_random_wall_pos ()
-      | InvalidWallPlacement _ ->
-        Format.printf "invalidplacement\n"; generate_random_wall_pos ()
+      | InvalidWallPosition _ -> generate_random_wall_pos ()
+      | InvalidPosition _ -> generate_random_wall_pos ()
+      | InvalidWallPlacement _ -> generate_random_wall_pos ()
   in
   let wall_pos1, wall_pos2 = generate_random_wall_pos () in
     Wall (wall_pos1, wall_pos2)
 
 let det_move pos =
-  Format.printf "det_move\n";
+  
   let r = Random.int 3 in
   if r == 0 && walls_left_current_player () > 0 then pos_wall_random ()
   else random_move pos
