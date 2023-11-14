@@ -1,7 +1,7 @@
 type color = Red | Green | Blue | Yellow
 type position = int * int
+type game_status = WaitingToStart | InProgress | Finished of color option
 
-exception OutOfBounds of string
 exception InvalidWallPosition of position * position * string
 exception InvalidPlayerPosition of position * string
 exception InvalidMove of string
@@ -12,3 +12,4 @@ exception InvalidNumberPlayer of int * string
 exception InvalidPlayerColor of color * string
 exception NoWinningPlayer of string
 exception NoPlayersInGame
+exception InvalidGameState of string

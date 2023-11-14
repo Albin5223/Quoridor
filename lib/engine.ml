@@ -85,6 +85,7 @@ let run_game () =
       aux ()
   in
   init_game 4;
+  Board.start_game ();
   aux ()
 
 (*let run_game () =
