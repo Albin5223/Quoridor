@@ -9,7 +9,7 @@ let init_game (attribut_lst : player_attribut list) =
         attribut_lst
 
 
-let play () = let strat = strategy_current_player () in
+let play () = Format.printf "play\n";let strat = strategy_current_player () in
   let pos = pos_current_player () in
     let move = strat pos in
       match move with 

@@ -11,7 +11,8 @@ let random_move pos =
       let newPos = List.nth lstMv r in
         Moving newPos
 
-let  pos_wall_random  =
+let pos_wall_random () =
+  Format.printf "wall_random\n";
   let rec generate_random_wall_pos () =
     let x1 = Random.int board_size in
     let y1 = Random.int board_size in
@@ -19,19 +20,23 @@ let  pos_wall_random  =
     let xv, yv = List.nth move_vectors r in
     Format.printf "pos wall :%d,%d " x1 y1;
     try
-      if
-        is_wall_position (x1, y1)
-        && is_wall_position (x1 + xv, y1 + yv)
-      then ((x1, y1), (x1 + xv, y1 + yv))
-      else generate_random_wall_pos ()
-    with InvalidPosition _ -> generate_random_wall_pos ()
+      validate_wall_placement (current_player ()) (x1, y1) (x1 + xv, y1 + yv);
+      ((x1, y1), (x1 + xv, y1 + yv))
+    with 
+      | InvalidWallPosition _ ->
+        Format.printf "invalidpos\n"; generate_random_wall_pos ()
+      | InvalidPosition _ ->
+        Format.printf "invalidpos\n"; generate_random_wall_pos ()
+      | InvalidWallPlacement _ ->
+        Format.printf "invalidplacement\n"; generate_random_wall_pos ()
   in
   let wall_pos1, wall_pos2 = generate_random_wall_pos () in
     Wall (wall_pos1, wall_pos2)
 
 let det_move pos =
+  Format.printf "det_move\n";
   let r = Random.int 3 in
-  if r == 0 && walls_left_current_player () > 0 then pos_wall_random
+  if r == 0 && walls_left_current_player () > 0 then pos_wall_random ()
   else random_move pos
 
 let create_lst_of_attributs () =

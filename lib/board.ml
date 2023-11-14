@@ -224,6 +224,9 @@ let validate_wall_placement player pos1 pos2 =
       (InvalidWallPlacement
          (pos1, pos2, "Wall placement blocks a player's path to goal"))
 
+
+let compare_player p1 p2 = p1.color = p2.color
+
 let place_wall pos1 pos2 =
   let player = current_player () in
   validate_wall_placement player pos1 pos2;
@@ -236,7 +239,7 @@ let place_wall pos1 pos2 =
   let updated_player = { player with walls_left = player.walls_left - 1 } in
   game_state.players <-
     List.map
-      (fun p -> if p = player then updated_player else p)
+      (fun p -> if compare_player p  player then updated_player else p)
       game_state.players;
 
   let x, y = player.position in
@@ -257,7 +260,7 @@ let move_player pos =
     let updated_player = { (current_player ()) with position = pos } in
     game_state.players <-
       List.map
-        (fun p -> if p = current_player () then updated_player else p)
+        (fun p -> if compare_player p (current_player ()) then updated_player else p)
         game_state.players;
 
     let new_x, new_y = pos in

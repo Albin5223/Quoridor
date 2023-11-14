@@ -15,3 +15,4 @@ exception InvalidNumberPlayer of int * string
 exception InvalidPlayerColor of color * string
 exception NoWinningPlayer of string
 exception NoPlayersInGame
+exception NoMove of string
