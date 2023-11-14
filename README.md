@@ -10,7 +10,7 @@ PPO5-2023 / "Quoridor" Project
 See rules [here](doc/Quoridor-specification.pdf)
 
 ## Main contributors
-| Name | Surname | Student ID |
+| Last Name | First Name | Student ID |
 | ---- | ------- | ---------- |
 | JOFFRIN | Evan | 22102052 |
 | EL JAMAI | Ali | 22104439 |
