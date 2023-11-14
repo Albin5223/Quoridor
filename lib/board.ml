@@ -1,6 +1,6 @@
 open Types
 
-type player = { position : position; walls_left : int; color : color }
+type player = { position : position; walls_left : int; color : color; strategy : strategy }
 type cell_content = Empty | Wall | Player of player
 type board = cell_content array array
 type state = { mutable players : player list; mutable status : game_status }
@@ -51,6 +51,7 @@ let update_player_order () =
 
 let pos_current_player () = (current_player ()).position
 let walls_left_current_player () = (current_player ()).walls_left
+let strategy_current_player () = (current_player ()).strategy
 
 let validate_position pos =
   let x, y = pos in
@@ -226,8 +227,8 @@ let dfs_path_exists player pos1 pos2 =
   in
   dfs start_pos
 
-let validate_wall_placement player pos1 pos2 =
-  if player.walls_left <= 0 then
+let validate_wall_placement walls_left pos1 pos2 =
+  if walls_left <= 0 then
     raise
       (InvalidWallPlacement (pos1, pos2, "Player has no walls left to place"));
 
@@ -257,11 +258,14 @@ let validate_wall_placement player pos1 pos2 =
       (InvalidWallPlacement
          (pos1, pos2, "Wall placement blocks a player's path to goal"))
 
+
+let compare_player p1 p2 = p1.color = p2.color
+
 let place_wall pos1 pos2 =
   validate_game_in_progress_status ();
 
   let player = current_player () in
-  validate_wall_placement player pos1 pos2;
+  validate_wall_placement player.walls_left pos1 pos2;
 
   let x1, y1 = pos1 in
   let x2, y2 = pos2 in
@@ -272,7 +276,7 @@ let place_wall pos1 pos2 =
   let updated_player = { player with walls_left = player.walls_left - 1 } in
   game_state.players <-
     List.map
-      (fun p -> if p = player then updated_player else p)
+      (fun p -> if compare_player p  player then updated_player else p)
       game_state.players;
 
   let x, y = player.position in
@@ -280,11 +284,11 @@ let place_wall pos1 pos2 =
 
   update_player_order ()
 
-let move_player destPos =
+let move_player pos =
   validate_game_in_progress_status ();
 
   let current_pos = (current_player ()).position in
-  if not (List.exists (( = ) destPos) (list_of_moves current_pos)) then
+  if not (List.exists (( = ) pos) (list_of_moves current_pos)) then
     raise
       (InvalidMove
          "The target position is not reachable from the current position")
@@ -293,13 +297,13 @@ let move_player destPos =
     game_board.(y).(x) <- Empty;
 
     (* First update the player in the list, then in the game_board *)
-    let updated_player = { (current_player ()) with position = destPos } in
+    let updated_player = { (current_player ()) with position = pos } in
     game_state.players <-
       List.map
-        (fun p -> if p = current_player () then updated_player else p)
+        (fun p -> if compare_player p (current_player ()) then updated_player else p)
         game_state.players;
 
-    let new_x, new_y = destPos in
+    let new_x, new_y = pos in
     game_board.(new_y).(new_x) <- Player updated_player;
 
     update_player_order ()
@@ -311,7 +315,7 @@ let is_border_position pos =
   (x = middle && (y = 0 || y = board_size - 1))
   || (y = middle && (x = 0 || x = board_size - 1))
 
-let add_player_to_board color pos =
+let add_player_to_board color pos strategy =
   validate_game_waiting_status ();
   let current_players = game_state.players in
   let nbPlayers = List.length current_players in
@@ -330,7 +334,7 @@ let add_player_to_board color pos =
   if is_player pos then
     raise (InvalidPlayerPosition (pos, "Player position is already occupied"));
 
-  let player = { position = pos; walls_left = 10; color } in
+  let player = { position = pos; walls_left = 10; color; strategy} in
 
   (* Adding the player to the list and to the game_board *)
   game_board.(y).(x) <- Player player;
@@ -359,6 +363,16 @@ let winning_player () =
   with Not_found ->
     raise (NoWinningPlayer "No player has reached their target zone")
 
+let reset_board () =
+  for y = 0 to board_size - 1 do
+    for x = 0 to board_size - 1 do
+      game_board.(y).(x) <- Empty
+    done
+  done;
+
+  game_state.players <- [];
+  game_state.status <- WaitingToStart
+
 let print_player p =
   match p.color with
   | Red -> Format.printf " R "
@@ -372,12 +386,14 @@ let print_cell cell =
   | Wall -> Format.printf " # "
   | Empty -> Format.printf " . "
 
-let print_row row = Array.iter (fun cell -> print_cell cell) row
+
 
 let print_board () =
-  Format.printf "@.";
-  Array.iter
-    (fun row ->
-      print_row row;
-      Format.printf "@;")
-    game_board
+  let print_row row = 
+    Array.iter (fun cell -> print_cell cell) row in
+      Format.printf "@.";
+      Array.iter
+        (fun row ->
+          print_row row;
+          Format.printf "@;")
+        game_board

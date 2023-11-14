@@ -34,6 +34,8 @@ val walls_left_current_player : unit -> int
 (** Returns the number of walls left for the current player.
     @raise NoPlayersInGame if there are no players in the game. *)
 
+val strategy_current_player : unit -> Types.strategy
+
 val validate_position : Types.position -> unit
 (** Validates a position on the game board.
     @param pos The position to validate.
@@ -85,9 +87,9 @@ val list_of_moves : Types.position -> Types.position list
     @raise InvalidPlayerPosition if the given position is not a player's position. 
     @note This function takes into account the presence of walls and other players. *)
 
-val validate_wall_placement : player -> Types.position -> Types.position -> unit
+val validate_wall_placement : int -> Types.position -> Types.position -> unit
 (** Validates the placement of a wall by a player.
-    @param player The player placing the wall.
+    @param wallsLeft The number of walls the player has left.
     @param pos1 The first position of the wall.
     @param pos2 The second position of the wall.
     @raise InvalidWallPlacement if the player has no walls left or the wall placement is invalid.
@@ -109,7 +111,7 @@ val move_player : Types.position -> unit
     @raise InvalidMove if the target position is not reachable.
     @raise InvalidGameState if the game is not in progress. *)
 
-val add_player_to_board : Types.color -> Types.position -> unit
+val add_player_to_board : Types.color -> Types.position -> Types.strategy -> unit
 (** Adds a player to the game board.
     @param color The color of the player.
     @param pos The position of the player.
@@ -121,6 +123,9 @@ val add_player_to_board : Types.color -> Types.position -> unit
 val winning_player : unit -> player
 (** Returns the player who has reached their target zone.
     @raise NoWinningPlayer if no player has reached their target zone. *)
+
+val reset_board : unit -> unit
+(** Resets the game board to its initial state. *)
 
 val print_board : unit -> unit
 (** Prints the current state of the game board. *)
