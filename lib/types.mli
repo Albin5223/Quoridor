@@ -1,5 +1,8 @@
 type color = Red | Green | Blue | Yellow
 type position = int * int
+type move = Wall of position * position | Moving of position
+type strategy = position -> move
+type player_attribut = color * position * strategy
 
 exception OutOfBounds of string
 exception InvalidWallPosition of position * position * string

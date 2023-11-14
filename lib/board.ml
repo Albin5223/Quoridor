@@ -1,6 +1,6 @@
 open Types
 
-type player = { position : position; walls_left : int; color : color }
+type player = { position : position; walls_left : int; color : color; strategy : strategy }
 type cell_content = Empty | Wall | Player of player
 type board = cell_content array array
 type state = { mutable players : player list }
@@ -18,6 +18,7 @@ let update_player_order () =
 
 let pos_current_player () = (current_player ()).position
 let walls_left_current_player () = (current_player ()).walls_left
+let strategy_current_player () = (current_player ()).strategy
 
 let validate_position pos =
   let x, y = pos in
@@ -53,9 +54,6 @@ let is_wall_between pos1 pos2 =
 
   if pos1 = pos2 then
     raise (InvalidPositionPair (pos1, pos2, "The two positions are the same"));
-
-  validate_position pos1;
-  validate_position pos2;
 
   if not (is_player_position pos1 && is_player_position pos2) then
     raise
@@ -246,9 +244,9 @@ let place_wall pos1 pos2 =
 
   update_player_order ()
 
-let move_player pos2 =
+let move_player pos =
   let current_pos = (current_player ()).position in
-  if not (List.exists (( = ) pos2) (list_of_moves current_pos)) then
+  if not (List.exists (( = ) pos) (list_of_moves current_pos)) then
     raise
       (InvalidMove
          "The target position is not reachable from the current position")
@@ -256,13 +254,13 @@ let move_player pos2 =
     let x, y = current_pos in
     game_board.(y).(x) <- Empty;
 
-    let updated_player = { (current_player ()) with position = pos2 } in
+    let updated_player = { (current_player ()) with position = pos } in
     game_state.players <-
       List.map
         (fun p -> if p = current_player () then updated_player else p)
         game_state.players;
 
-    let new_x, new_y = pos2 in
+    let new_x, new_y = pos in
     game_board.(new_y).(new_x) <- Player updated_player;
 
     update_player_order ()
@@ -273,7 +271,7 @@ let is_border_position pos =
   (x = middle && (y = 0 || y = board_size - 1))
   || (y = middle && (x = 0 || x = board_size - 1))
 
-let add_player_to_board color pos =
+let add_player_to_board color pos strategy =
   let current_players = game_state.players in
   let nbPlayers = List.length current_players in
   if nbPlayers >= 4 then
@@ -291,7 +289,7 @@ let add_player_to_board color pos =
   if not (is_border_position pos) then
     raise (InvalidPlayerPosition (pos, "Player must be placed on a border"));
 
-  let player = { position = pos; walls_left = 10; color } in
+  let player = { position = pos; walls_left = 10; color; strategy} in
   game_board.(y).(x) <- Player player;
   game_state.players <- game_state.players @ [ player ]
 
@@ -320,6 +318,8 @@ let winning_player () =
   with Not_found ->
     raise (NoWinningPlayer "No player has reached their target zone")
 
+
+
 let print_player p =
   match p.color with
   | Red -> Format.printf " R "
@@ -333,12 +333,14 @@ let print_cell cell =
   | Wall -> Format.printf " # "
   | Empty -> Format.printf " . "
 
-let print_row row = Array.iter (fun cell -> print_cell cell) row
+
 
 let print_board () =
-  Format.printf "@.";
-  Array.iter
-    (fun row ->
-      print_row row;
-      Format.printf "@;")
-    game_board
+  let print_row row = 
+    Array.iter (fun cell -> print_cell cell) row in
+      Format.printf "@.";
+      Array.iter
+        (fun row ->
+          print_row row;
+          Format.printf "@;")
+        game_board
