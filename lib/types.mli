@@ -6,19 +6,19 @@ type move = Wall of position * position | Moving of position
 type strategy = position -> move
 
 type player = {
-  position : position;
+  start_position : position;
+  current_position : position;
   walls_left : int;
   color : color;
   strategy : strategy;
 }
-(** Represents a player in the game. Contains position, walls left, and color. *)
+(** Represents a player in the game. Contains start and current position, walls left, and color. *)
 
 (** Represents the status of the game. *)
 type game_status =
   | WaitingToStart  (** Game is initialized but not started. *)
   | InProgress  (** Game is currently in progress. *)
-  | Finished of player option
-      (** Game is finished. Option holds the winning player if there is one. *)
+  | Finished of player  (** Game is finished. Holds the winning player. *)
 
 exception InvalidWallPosition of position * position * string
 (** Raised when a wall is placed in an invalid position. *)
@@ -51,7 +51,7 @@ exception NoWinningPlayer of string
 
 exception NoPlayersInGame
 
-exception NoMove of string
+exception NoMovePossible of string
 (** Raised when an operation is attempted on a game with no players. *)
 
 exception InvalidGameState of string
