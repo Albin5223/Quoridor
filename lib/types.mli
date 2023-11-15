@@ -1,38 +1,58 @@
-(** Module Types : Définitions des types de base pour le jeu Quoridor *)
-
-(** {1 Types de Base} *)
-
-(** Couleurs possibles pour les joueurs. *)
+(** Represents the color of a player. *)
 type color = Red | Green | Blue | Yellow
 
 type position = int * int
-(** Position sur le plateau, représentée par un tuple (x, y). *)
+type move = Wall of position * position | Moving of position
+type strategy = position -> move
 
-(** {1 Types de Joueurs et de Jeu} *)
-
-type player = { position : position; walls_left : int; color : color }
-(** Représente un joueur avec sa position, le nombre de murs restants et sa couleur. *)
-
-(** État du jeu, soit en cours soit terminé avec le joueur gagnant. *)
-type state = Ingame | GameOver of player
-
-type game = {
-  players : player list;
-  current_player : player;
-  state : state;
-  winner : player option;
+type player = {
+  position : position;
+  walls_left : int;
+  color : color;
+  strategy : strategy;
 }
-(** Structure globale du jeu incluant les joueurs, le joueur actuel, l'état du jeu et le gagnant. *)
+(** Represents a player in the game. Contains position, walls left, and color. *)
 
-(** {1 Exceptions} *)
+(** Represents the status of the game. *)
+type game_status =
+  | WaitingToStart  (** Game is initialized but not started. *)
+  | InProgress  (** Game is currently in progress. *)
+  | Finished of player option
+      (** Game is finished. Option holds the winning player if there is one. *)
 
-exception OutOfBounds of string
-(** Exceptions personnalisées pour la gestion d'erreurs spécifiques dans le jeu. *)
+exception InvalidWallPosition of position * position * string
+(** Raised when a wall is placed in an invalid position. *)
 
-exception InvalidWallPosition of string
-exception InvalidPlayerPosition of string
+exception InvalidPlayerPosition of position * string
+(** Raised when a player is moved to an invalid position. *)
+
 exception InvalidMove of string
-exception InvalidPosition of string
-exception InvalidWallPlacement of string
-exception InvalidNumberPlayer of string
+(** Raised when a move made in the game is invalid. *)
+
+exception InvalidPosition of position * string
+(** Raised when a specified position is invalid for the current game context. *)
+
+exception InvalidPositionPair of position * position * string
+(** Raised when a pair of positions are invalid in the given context. *)
+
+exception InvalidWallPlacement of position * position * string
+(** Raised when a wall is placed incorrectly on the game board. *)
+
+exception InvalidNumberPlayer of int * string
+(** Raised when the number of players in the game is invalid. *)
+
+exception InvalidPlayerColor of color * string
+(** Raised when an invalid color is assigned to a player. *)
+
+exception InvalidPlayerWallsLeft of int * string
+
 exception NoWinningPlayer of string
+(** Raised when there is no winning player in a game scenario where one is expected. *)
+
+exception NoPlayersInGame
+
+exception NoMove of string
+(** Raised when an operation is attempted on a game with no players. *)
+
+exception InvalidGameState of string
+(** Raised when the game state is invalid for the attempted operation. *)

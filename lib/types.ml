@@ -1,20 +1,27 @@
 type color = Red | Green | Blue | Yellow
 type position = int * int
-type player = { position : position; walls_left : int; color : color }
-type state = Ingame | GameOver of player
+type move = Wall of position * position | Moving of position
+type strategy = position -> move
 
-type game = {
-  players : player list;
-  current_player : player;
-  state : state;
-  winner : player option;
+type player = {
+  position : position;
+  walls_left : int;
+  color : color;
+  strategy : strategy;
 }
 
-exception OutOfBounds of string
-exception InvalidWallPosition of string
-exception InvalidPlayerPosition of string
+type game_status = WaitingToStart | InProgress | Finished of player option
+
+exception InvalidWallPosition of position * position * string
+exception InvalidPlayerPosition of position * string
 exception InvalidMove of string
-exception InvalidPosition of string
-exception InvalidWallPlacement of string
-exception InvalidNumberPlayer of string
+exception InvalidPosition of position * string
+exception InvalidPositionPair of position * position * string
+exception InvalidWallPlacement of position * position * string
+exception InvalidNumberPlayer of int * string
+exception InvalidPlayerColor of color * string
+exception InvalidPlayerWallsLeft of int * string
 exception NoWinningPlayer of string
+exception NoPlayersInGame
+exception NoMove of string
+exception InvalidGameState of string

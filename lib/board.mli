@@ -1,72 +1,123 @@
-(** Module Board : Gestion du plateau de jeu Quoridor *)
-
-open Types
-
-(** {1 Types} *)
-
 type cell_content
-(** Type représentant le contenu d'une cellule sur le plateau. *)
+(** Represents the content of a cell on the game board. Can be empty, a wall, or a player. *)
 
 type board
-(** Type représentant le plateau de jeu. *)
+(** Represents the game board as a matrix of cell contents. *)
 
-(** {1 Constantes} *)
+type state
+(** Represents the current state of the game, including the list of players and the game status. *)
 
 val board_size : int
-(** Taille standard du plateau de jeu Quoridor. *)
+(** The size of the game board. *)
 
-(** {1 Fonctions} *)
+val move_vectors : (int * int) list
+(** The list of possible move directions for a player. *)
 
-val is_valid_position : int * int -> bool
-(** Vérifie si une position est valide sur le plateau.
-    @param pos Position à vérifier (x, y).
-    @return [true] si la position est valide, [false] sinon. *)
+val start_game : unit -> unit
+(** Starts the game.
+    @raise InvalidNumberPlayer if the number of players is not between 2 and 4.
+    @raise InvalidGameState if the game is not in the WaitingToStart state. *)
 
-val is_wall_position : int * int -> bool
-(** Vérifie si la position donnée peut accueillir un mur.
-    @param pos Position à vérifier (x, y).
-    @return [true] si la position peut accueillir un mur, [false] sinon. *)
+val stop_game : Types.player option -> unit
+(** Stops the game and optionally sets the winning player.
+    @param winning_color_option The winning player, if there is one.
+    @raise InvalidGameState if the game is not in progress. *)
 
-val is_player_position : int * int -> bool
-(** Vérifie si la position donnée est celle d'un joueur.
-    @param pos Position à vérifier (x, y).
-    @return [true] si la position est celle d'un joueur, [false] sinon. *)
+val current_player : unit -> Types.player
+(** Returns the current player.
+    @raise NoPlayersInGame if there are no players in the game. *)
 
-val is_wall : int * int -> bool
-(** Vérifie si un mur se trouve à une position donnée.
-    @param pos Position à vérifier (x, y).
-    @return [true] si un mur est présent, [false] sinon. *)
+val validate_position : Types.position -> unit
+(** Validates a position on the game board.
+    @param pos The position to validate.
+    @raise InvalidPosition if the position is outside the board boundaries. *)
 
-val is_player : int * int -> bool
-(** Vérifie si un joueur se trouve à une position donnée.
-    @param pos Position à vérifier (x, y).
-    @return [true] si un joueur est présent, [false] sinon. *)
+val is_wall_position : Types.position -> bool
+(** Determines if a position is a valid wall position.
+    @param pos The position to check.
+    @return true if it is a wall position, false otherwise. *)
 
-val is_wall_between : int * int -> int * int -> bool
-(** Vérifie s'il y a un mur entre deux positions adjacentes.
-    @param pos1 Première position (x, y).
-    @param pos2 Deuxième position (x, y).
-    @return [true] si un mur est présent entre les deux positions, [false] sinon.
-    @raise InvalidPosition si les positions ne sont pas adjacentes ou sont identiques. *)
+val is_player_position : Types.position -> bool
+(** Determines if a position is a valid player position.
+    @param pos The position to check.
+    @return true if it is a player position, false otherwise. *)
 
-val add_players_to_board : player list -> unit
-(** Place les joueurs sur le plateau aux positions initiales.
-    @param players Liste des joueurs à placer.
-    @raise InvalidPlayerPosition si une position de joueur est invalide ou déjà occupée. *)
+val is_wall : Types.position -> bool
+(** Checks if there is a wall at the given position.
+    @param pos The position to check.
+    @return true if there is a wall, false otherwise. *)
 
-val update_player_position : player -> int * int -> unit
-(** Déplace un joueur vers une nouvelle position.
-    @param player Joueur à déplacer.
-    @param pos Nouvelle position du joueur (x, y).
-    @raise Invalid_argument si la nouvelle position est hors limites.
-    @raise InvalidPlayerPosition si la nouvelle position est déjà occupée par un autre joueur. *)
+val is_player : Types.position -> bool
+(** Checks if there is a player at the given position.
+    @param pos The position to check.
+    @return true if there is a player, false otherwise. *)
 
-val place_wall : int * int -> int * int -> unit
-(** Place un mur entre deux positions valides.
-    @param pos1 Première position du mur (x, y).
-    @param pos2 Deuxième position du mur (x, y).
-    @raise InvalidWallPosition si les positions pour le mur sont hors limites.
-    @raise InvalidWallPlacement si un mur est déjà présent aux positions indiquées. *)
+val is_wall_between : Types.position -> Types.position -> bool
+(** Checks if there is a wall between two positions.
+    @param pos1 The first position.
+    @param pos2 The second position.
+    @return true if there is a wall between the positions, false otherwise.
+    @raise InvalidPositionPair if the positions are the same, not adjacent, or not player positions. *)
+
+val adjacent_walls : Types.position -> (int * int) list
+(** Returns a list of positions of walls adjacent to a given player position.
+    @param pos The player's position.
+    @raise InvalidPlayerPosition if the given position is not a player's position.
+    @return A list of positions where walls are present adjacent to the given player position. *)
+
+val adjacent_players : Types.position -> (int * int) list
+(** Returns a list of positions of players adjacent to a given player position.
+    @param pos The player's position.
+    @raise InvalidPlayerPosition if the given position is not a player's position.
+    @return A list of positions where players are present adjacent to the given player position. *)
+
+val list_of_moves : Types.position -> Types.position list
+(** Provides a list of all possible moves from a given position.
+    @param pos The current position of the player.
+    @return A list of positions representing all valid moves from the given position.
+    @raise InvalidPlayerPosition if the given position is not a player's position. 
+    @note This function takes into account the presence of walls and other players. *)
+
+val validate_wall_placement :
+  Types.player -> Types.position -> Types.position -> unit
+(** Validates the placement of a wall by a player.
+    @param wallsLeft The number of walls the player has left.
+    @param pos1 The first position of the wall.
+    @param pos2 The second position of the wall.
+    @raise InvalidWallPlacement if the player has no walls left or the wall placement is invalid.
+    @raise InvalidWallPosition if the wall positions are not valid or not adjacent and aligned.
+    @raise InvalidGameState if the game is not in progress. *)
+
+val place_wall : Types.position -> Types.position -> unit
+(** Places a wall on the board.
+    @param pos1 The first position of the wall.
+    @param pos2 The second position of the wall.
+    @raise InvalidWallPlacement if the player has no walls left to place or the wall placement is invalid or if the wall placement blocks a player's path to goal.
+    @raise InvalidWallPosition if the given positions are not valid wall positions or if they are not adjacent and aligned.
+    @raise InvalidGameState if the game is not in progress.
+    @raise InvalidPosition if either position is outside the board boundaries. *)
+
+val move_player : Types.position -> unit
+(** Moves the current player to a new position.
+    @param destPos The destination position.
+    @raise InvalidMove if the target position is not reachable.
+    @raise InvalidGameState if the game is not in progress. *)
+
+val add_player_to_board : Types.player -> unit
+(** Adds a player to the game board.
+    @param player The player to add.
+    @raise InvalidNumberPlayer if there are already 4 players.
+    @raise InvalidPlayerColor if a player with the same color already exists.
+    @raise InvalidPlayerPosition if the position is not on a border or already occupied.
+    @raise InvalidGameState if the game is not in WaitingToStart state.
+    @raise InvalidPlayerWallsLeft if a player haven't 10 walls *)
+
+val winning_player : unit -> Types.player
+(** Returns the player who has reached their target zone.
+    @raise NoWinningPlayer if no player has reached their target zone. *)
+
+val reset_board : unit -> unit
+(** Resets the game board to its initial state. *)
 
 val print_board : unit -> unit
-(** Affiche l'état actuel du plateau de jeu. *)
+(** Prints the current state of the game board. *)
