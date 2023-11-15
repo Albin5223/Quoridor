@@ -57,6 +57,27 @@ let test_add_player_invalid_position =
         Alcotest.fail "No exception raised for invalid position"
       with InvalidPlayerPosition _ -> ())
 
+let test_add_player_invalid_color =
+  Alcotest.test_case "invalid_color" `Quick (fun () ->
+    Board.reset_board ();
+    let p1 = Engine.create_player (8,16) 10 Red Strategy.det_move in 
+    let p2 = Engine.create_player (8,0) 10 Red Strategy.det_move in 
+    Board.add_player_to_board p1;
+    try 
+      Board.add_player_to_board p2; 
+      Board.start_game (); 
+      Alcotest.fail "Unraised exception when two players have the same color"
+    with
+      InvalidPlayerColor _ -> ())
+
+let test_add_player_invalid_am_of_walls = 
+  Alcotest.test_case "invalid number of walls" `Quick (fun () -> 
+    Board.reset_board ();
+    try 
+      let p1 = Engine.create_player (8,16) 777 Red Strategy.det_move in 
+      Board.add_player_to_board p1; Board.start_game ();
+    with 
+      InvalidPlayerWallsLeft _ -> ())
 let test_move_player_valid =
   Alcotest.test_case "move_player_valid" `Quick (fun () ->
       Board.reset_board ();
@@ -177,7 +198,8 @@ let () =
   run "Board Tests"
     [
       ( "add_player_to_board",
-        [ test_add_player_valid; test_add_player_invalid_position ] );
+        [ test_add_player_valid; test_add_player_invalid_position; 
+        test_add_player_invalid_color; test_add_player_invalid_am_of_walls] );
       ("start_game", [test_starting_game]);
       ("move_player", [ test_move_player_valid; test_move_player_invalid ]);
       ("place_wall", [ test_place_wall_valid; test_place_wall_invalid ]);
