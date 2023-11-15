@@ -121,3 +121,7 @@ val reset_board : unit -> unit
 
 val print_board : unit -> unit
 (** Prints the current state of the game board. *)
+
+
+val color_to_string : Types.player -> string
+(**Returns the color of a player as a string.*)

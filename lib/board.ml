@@ -397,3 +397,10 @@ let print_board () =
       print_row row;
       Format.printf "@;")
     game_board
+
+let color_to_string player =
+  match player.color with
+  | Red -> "red"
+  | Green -> "green"
+  | Blue -> "blue"
+  | Yellow -> "yellow"
