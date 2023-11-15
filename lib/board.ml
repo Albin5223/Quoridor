@@ -356,16 +356,16 @@ let winning_player () =
       match player.start_position with
       | x, _ when x = 0 ->
           (* Start at left border *)
-          fun (_, y) -> y = board_size - 1
+          fun (x, _) -> x = board_size - 1
       | x, _ when x = board_size - 1 ->
           (* Start at right border *)
-          fun (_, y) -> y = 0
+          fun (x, _) -> x = 0
       | _, y when y = 0 ->
           (* Start at top border *)
-          fun (x, _) -> x = board_size - 1
+          fun (_, y) -> y = board_size - 1
       | _, y when y = board_size - 1 ->
           (* Start at bottom border *)
-          fun (x, _) -> x = 0
+          fun (_, y) -> y = 0
       | _ ->
           raise
             (InvalidPlayerPosition
