@@ -34,9 +34,9 @@ let start_game () =
              "Number of players must be between 2 and 4 to start the game" ))
   else raise (InvalidGameState "Game cannot be started")
 
-let stop_game winning_color_option =
+let stop_game winner =
   validate_game_in_progress_status ();
-  game_state.status <- Finished winning_color_option
+  game_state.status <- Finished winner
 
 let current_player () =
   match game_state.players with
@@ -47,10 +47,6 @@ let update_player_order () =
   match game_state.players with
   | [] -> ()
   | first :: rest -> game_state.players <- rest @ [ first ]
-
-let pos_current_player () = (current_player ()).position
-let walls_left_current_player () = (current_player ()).walls_left
-let strategy_current_player () = (current_player ()).strategy
 
 let validate_position pos =
   let x, y = pos in
@@ -226,8 +222,8 @@ let dfs_path_exists player pos1 pos2 =
   in
   dfs start_pos
 
-let validate_wall_placement walls_left pos1 pos2 =
-  if walls_left <= 0 then
+let validate_wall_placement player pos1 pos2 =
+  if player.walls_left <= 0 then
     raise
       (InvalidWallPlacement (pos1, pos2, "Player has no walls left to place"));
 
@@ -263,7 +259,7 @@ let place_wall pos1 pos2 =
   validate_game_in_progress_status ();
 
   let player = current_player () in
-  validate_wall_placement player.walls_left pos1 pos2;
+  validate_wall_placement player pos1 pos2;
 
   let x1, y1 = pos1 in
   let x2, y2 = pos2 in
@@ -300,6 +296,8 @@ let move_player pos =
       List.map
         (fun p ->
           if compare_player p (current_player ()) then updated_player else p)
+        (fun p ->
+          if compare_player p (current_player ()) then updated_player else p)
         game_state.players;
 
     let new_x, new_y = pos in
@@ -314,7 +312,7 @@ let is_border_position pos =
   (x = middle && (y = 0 || y = board_size - 1))
   || (y = middle && (x = 0 || x = board_size - 1))
 
-let add_player_to_board color pos strategy =
+let add_player_to_board player =
   validate_game_waiting_status ();
   let current_players = game_state.players in
   let nbPlayers = List.length current_players in
@@ -323,17 +321,20 @@ let add_player_to_board color pos strategy =
       (InvalidNumberPlayer
          (nbPlayers, "Cannot have more than 4 players on the board"));
 
-  if List.exists (fun p -> p.color = color) current_players then
+  if List.exists (fun p -> p.color = player.color) current_players then
     raise
-      (InvalidPlayerColor (color, "A player with the same color already exists"));
+      (InvalidPlayerColor (player.color, "A player with the same color already exists"));
 
-  let x, y = pos in
-  if not (is_border_position pos) then
-    raise (InvalidPlayerPosition (pos, "Player must be placed on a border"));
-  if is_player pos then
-    raise (InvalidPlayerPosition (pos, "Player position is already occupied"));
+  if player.walls_left <> 10  then
+    raise
+      (InvalidPlayerWallsLeft
+         (player.walls_left, "A player must have 10 walls to start the game"));
 
-  let player = { position = pos; walls_left = 10; color; strategy } in
+  let x, y = player.position in
+  if not (is_border_position player.position) then
+    raise (InvalidPlayerPosition (player.position, "Player must be placed on a border"));
+  if is_player player.position then
+    raise (InvalidPlayerPosition (player.position, "Player position is already occupied"));
 
   (* Adding the player to the list and to the game_board *)
   game_board.(y).(x) <- Player player;
@@ -386,6 +387,13 @@ let print_cell cell =
   | Empty -> Format.printf " . "
 
 let print_board () =
+  let print_row row = Array.iter (fun cell -> print_cell cell) row in
+  Format.printf "@.";
+  Array.iter
+    (fun row ->
+      print_row row;
+      Format.printf "@;")
+    game_board
   let print_row row = Array.iter (fun cell -> print_cell cell) row in
   Format.printf "@.";
   Array.iter

@@ -5,7 +5,10 @@ let init_game (attribut_lst : player_attribut list) =
   List.iter
     (fun el ->
       let col, pos, strat = el in
+    (fun el ->
+      let col, pos, strat = el in
       Board.add_player_to_board col pos strat)
+    attribut_lst
     attribut_lst
 
 let play () =
@@ -37,3 +40,4 @@ let run_game attribut_lst =
   init_game attribut_lst;
   Board.start_game ();
   aux ()
+

@@ -8,12 +8,20 @@ type strategy = position -> move
 type player_attribut = color * position * strategy
 (** Represents a position on the game board as a pair of integers. *)
 
+type player = {
+  position : position;
+  walls_left : int;
+  color : color;
+  strategy : strategy;
+}
+(** Represents a player in the game. Contains position, walls left, and color. *)
+
 (** Represents the status of the game. *)
 type game_status =
   | WaitingToStart  (** Game is initialized but not started. *)
   | InProgress  (** Game is currently in progress. *)
-  | Finished of color option
-      (** Game is finished. Option holds the winning color if there is one. *)
+  | Finished of player option
+      (** Game is finished. Option holds the winning player if there is one. *)
 
 type player = {
   position : position;
@@ -45,6 +53,8 @@ exception InvalidNumberPlayer of int * string
 
 exception InvalidPlayerColor of color * string
 (** Raised when an invalid color is assigned to a player. *)
+
+exception InvalidPlayerWallsLeft of int * string
 
 exception NoWinningPlayer of string
 (** Raised when there is no winning player in a game scenario where one is expected. *)
