@@ -4,6 +4,7 @@ type color = Red | Green | Blue | Yellow
 type position = int * int
 type move = Wall of position * position | Moving of position
 type strategy = position -> move
+
 type player_attribut = color * position * strategy
 (** Represents a position on the game board as a pair of integers. *)
 
@@ -42,6 +43,7 @@ exception NoWinningPlayer of string
 (** Raised when there is no winning player in a game scenario where one is expected. *)
 
 exception NoPlayersInGame
+
 exception NoMove of string
 (** Raised when an operation is attempted on a game with no players. *)
 

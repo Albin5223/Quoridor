@@ -1,21 +1,21 @@
 open Types
 open Board
 
-
 let init_game (attribut_lst : player_attribut list) =
   List.iter
-    (fun el -> let (col, pos, strat) = el in 
+    (fun el ->
+      let col, pos, strat = el in
       Board.add_player_to_board col pos strat)
-        attribut_lst
+    attribut_lst
 
-
-let play () = Format.printf "play\n";
+let play () =
+  Format.printf "play\n";
   let strat = strategy_current_player () in
-    let pos = pos_current_player () in
-      let move = strat pos in
-        match move with 
-          |Wall (pos1, pos2) -> Board.place_wall pos1 pos2
-          |Moving pos -> Board.move_player pos
+  let pos = pos_current_player () in
+  let move = strat pos in
+  match move with
+  | Wall (pos1, pos2) -> Board.place_wall pos1 pos2
+  | Moving pos -> Board.move_player pos
 
 let run_game attribut_lst =
   Random.self_init ();

@@ -111,7 +111,8 @@ val move_player : Types.position -> unit
     @raise InvalidMove if the target position is not reachable.
     @raise InvalidGameState if the game is not in progress. *)
 
-val add_player_to_board : Types.color -> Types.position -> Types.strategy -> unit
+val add_player_to_board :
+  Types.color -> Types.position -> Types.strategy -> unit
 (** Adds a player to the game board.
     @param color The color of the player.
     @param pos The position of the player.
