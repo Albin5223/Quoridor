@@ -1,4 +1,4 @@
-(*open Quoridor
+open Quoridor
   open Quoridor.Types
 
   module Strategy = struct
@@ -36,14 +36,15 @@
 
     let det_move pos =
       let r = Random.int 3 in
-      if r == 0 && walls_left_current_player () > 0 then pos_wall_random ()
+      if r == 0 && (current_player ()).walls_left > 0 then pos_wall_random ()
       else random_move pos
   end
 
   let test_add_player_valid =
     Alcotest.test_case "add_player_valid" `Quick (fun () ->
         Board.reset_board ();
-        Board.add_player_to_board Red (0, Board.board_size / 2) Strategy.det_move;
+        let player = Engine.create_player (0, Board.board_size / 2) 10 Red Strategy.det_move in
+        Board.add_player_to_board player;
         Alcotest.(check bool)
           "Player added correctly" true
           (Board.is_player (0, Board.board_size / 2)))
@@ -52,15 +53,18 @@
     Alcotest.test_case "add_player_invalid_position" `Quick (fun () ->
         Board.reset_board ();
         try
-          Board.add_player_to_board Blue (1, 1) Strategy.det_move;
+          let player = Engine.create_player (1, 1) 10 Blue Strategy.det_move in
+          Board.add_player_to_board player;
           Alcotest.fail "No exception raised for invalid position"
         with InvalidPlayerPosition _ -> ())
 
   let test_move_player_valid =
     Alcotest.test_case "move_player_valid" `Quick (fun () ->
         Board.reset_board ();
-        Board.add_player_to_board Red (8, 16) Strategy.det_move;
-        Board.add_player_to_board Blue (8, 0) Strategy.det_move;
+        let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
+        Board.add_player_to_board p1;
+        let p2 = Engine.create_player (8, 0)10 Blue Strategy.det_move in
+        Board.add_player_to_board p2;
         Board.start_game ();
         Board.move_player (8, 14);
         Alcotest.(check bool)
@@ -70,8 +74,10 @@
   let test_move_player_invalid =
     Alcotest.test_case "move_player_invalid" `Quick (fun () ->
         Board.reset_board ();
-        Board.add_player_to_board Red (8, 16) Strategy.det_move;
-        Board.add_player_to_board Blue (8, 0) Strategy.det_move;
+        let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
+        Board.add_player_to_board p1;
+        let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
+        Board.add_player_to_board p2;
         Board.start_game ();
         try
           Board.move_player (8, 13);
@@ -81,8 +87,10 @@
   let test_place_wall_valid =
     Alcotest.test_case "place_wall_valid" `Quick (fun () ->
         Board.reset_board ();
-        Board.add_player_to_board Red (8, 16) Strategy.det_move;
-        Board.add_player_to_board Blue (8, 0) Strategy.det_move;
+        let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
+        Board.add_player_to_board p1;
+        let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
+        Board.add_player_to_board p2;
         Board.start_game ();
         Board.place_wall (1, 0) (1, 1);
         Alcotest.(check bool)
@@ -92,8 +100,10 @@
   let test_place_wall_invalid =
     Alcotest.test_case "place_wall_invalid" `Quick (fun () ->
         Board.reset_board ();
-        Board.add_player_to_board Red (8, 16) Strategy.det_move;
-        Board.add_player_to_board Blue (8, 0) Strategy.det_move;
+        let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
+        Board.add_player_to_board p1;
+        let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
+        Board.add_player_to_board p2;
         Board.start_game ();
         try
           Board.place_wall (1, 1) (1, 3);
@@ -103,8 +113,10 @@
   let test_winning_player_none =
     Alcotest.test_case "winning_player_none" `Quick (fun () ->
         Board.reset_board ();
-        Board.add_player_to_board Red (0, Board.board_size / 2) Strategy.det_move;
-        Board.add_player_to_board Yellow (8, 0) Strategy.det_move;
+        let p1 = Engine.create_player (0, Board.board_size / 2) 10 Red Strategy.det_move in
+        Board.add_player_to_board p1;
+        let p2 = Engine.create_player (8, 0) 10 Yellow Strategy.det_move in
+        Board.add_player_to_board p2;
         try
           let _ = Board.winning_player () in
           Alcotest.fail "No exception raised for no winning player"
@@ -136,4 +148,3 @@
         ( "validate_position",
           [ test_validate_position_valid; test_validate_position_invalid ] );
       ]
-*)
