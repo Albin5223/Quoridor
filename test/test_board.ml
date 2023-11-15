@@ -8,7 +8,8 @@ module Strategy = struct
   let random_move pos =
     let lstMv = list_of_moves pos in
     match lstMv with
-    | [] -> raise (NoMove "There is no movement possible for this player")
+    | [] ->
+        raise (NoMovePossible "There is no movement possible for this player")
     | _ ->
         let r = Random.int (List.length lstMv) in
         let newPos = List.nth lstMv r in

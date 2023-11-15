@@ -23,5 +23,5 @@ exception InvalidPlayerColor of color * string
 exception InvalidPlayerWallsLeft of int * string
 exception NoWinningPlayer of string
 exception NoPlayersInGame
-exception NoMove of string
+exception NoMovePossible of string
 exception InvalidGameState of string

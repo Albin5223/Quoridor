@@ -51,7 +51,7 @@ exception NoWinningPlayer of string
 
 exception NoPlayersInGame
 
-exception NoMove of string
+exception NoMovePossible of string
 (** Raised when an operation is attempted on a game with no players. *)
 
 exception InvalidGameState of string
