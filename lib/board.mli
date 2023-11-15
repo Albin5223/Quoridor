@@ -78,7 +78,8 @@ val list_of_moves : Types.position -> Types.position list
     @raise InvalidPlayerPosition if the given position is not a player's position. 
     @note This function takes into account the presence of walls and other players. *)
 
-val validate_wall_placement : Types.player -> Types.position -> Types.position -> unit
+val validate_wall_placement :
+  Types.player -> Types.position -> Types.position -> unit
 (** Validates the placement of a wall by a player.
     @param wallsLeft The number of walls the player has left.
     @param pos1 The first position of the wall.
@@ -111,7 +112,6 @@ val add_player_to_board : Types.player -> unit
     @raise InvalidGameState if the game is not in WaitingToStart state.
     @raise InvalidPlayerWallsLeft if a player haven't 10 walls *)
 
-val winning_player : unit -> Types.player
 val winning_player : unit -> Types.player
 (** Returns the player who has reached their target zone.
     @raise NoWinningPlayer if no player has reached their target zone. *)

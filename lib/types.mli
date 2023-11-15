@@ -5,9 +5,6 @@ type position = int * int
 type move = Wall of position * position | Moving of position
 type strategy = position -> move
 
-type player_attribut = color * position * strategy
-(** Represents a position on the game board as a pair of integers. *)
-
 type player = {
   position : position;
   walls_left : int;
@@ -22,13 +19,6 @@ type game_status =
   | InProgress  (** Game is currently in progress. *)
   | Finished of player option
       (** Game is finished. Option holds the winning player if there is one. *)
-
-type player = {
-  position : position;
-  walls_left : int;
-  color : color;
-  strategy : strategy;
-}
 
 exception InvalidWallPosition of position * position * string
 (** Raised when a wall is placed in an invalid position. *)

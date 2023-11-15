@@ -296,8 +296,6 @@ let move_player pos =
       List.map
         (fun p ->
           if compare_player p (current_player ()) then updated_player else p)
-        (fun p ->
-          if compare_player p (current_player ()) then updated_player else p)
         game_state.players;
 
     let new_x, new_y = pos in
@@ -323,18 +321,23 @@ let add_player_to_board player =
 
   if List.exists (fun p -> p.color = player.color) current_players then
     raise
-      (InvalidPlayerColor (player.color, "A player with the same color already exists"));
+      (InvalidPlayerColor
+         (player.color, "A player with the same color already exists"));
 
-  if player.walls_left <> 10  then
+  if player.walls_left <> 10 then
     raise
       (InvalidPlayerWallsLeft
          (player.walls_left, "A player must have 10 walls to start the game"));
 
   let x, y = player.position in
   if not (is_border_position player.position) then
-    raise (InvalidPlayerPosition (player.position, "Player must be placed on a border"));
+    raise
+      (InvalidPlayerPosition
+         (player.position, "Player must be placed on a border"));
   if is_player player.position then
-    raise (InvalidPlayerPosition (player.position, "Player position is already occupied"));
+    raise
+      (InvalidPlayerPosition
+         (player.position, "Player position is already occupied"));
 
   (* Adding the player to the list and to the game_board *)
   game_board.(y).(x) <- Player player;
@@ -387,13 +390,6 @@ let print_cell cell =
   | Empty -> Format.printf " . "
 
 let print_board () =
-  let print_row row = Array.iter (fun cell -> print_cell cell) row in
-  Format.printf "@.";
-  Array.iter
-    (fun row ->
-      print_row row;
-      Format.printf "@;")
-    game_board
   let print_row row = Array.iter (fun cell -> print_cell cell) row in
   Format.printf "@.";
   Array.iter

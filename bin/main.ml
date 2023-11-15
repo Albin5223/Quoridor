@@ -18,10 +18,7 @@ let pos_wall_random () =
     let r = Random.int 4 in
     let xv, yv = List.nth move_vectors r in
     try
-      validate_wall_placement
-        (walls_left_current_player ())
-        (x1, y1)
-        (x1 + xv, y1 + yv);
+      validate_wall_placement (current_player ()) (x1, y1) (x1 + xv, y1 + yv);
       ((x1, y1), (x1 + xv, y1 + yv))
     with
     | InvalidWallPosition _ -> generate_random_wall_pos ()
@@ -33,10 +30,10 @@ let pos_wall_random () =
 
 let det_move pos =
   let r = Random.int 3 in
-  if r == 0 && walls_left_current_player () > 0 then pos_wall_random ()
+  if r == 0 && (current_player ()).walls_left > 0 then pos_wall_random ()
   else random_move pos
 
-let create_lst_of_attributs () =
+let create_lst_of_player () =
   let colors = [ Red; Blue; Green; Yellow ] in
   let positions =
     [
@@ -46,9 +43,10 @@ let create_lst_of_attributs () =
       (board_size - 1, board_size / 2);
     ]
   in
-  List.init 4 (fun i -> (List.nth colors i, List.nth positions i, det_move))
+  List.init 4 (fun i ->
+      create_player (List.nth positions i) 10 (List.nth colors i) det_move)
 
 let () =
-  let lst_attribut = create_lst_of_attributs () in
+  let lst_attribut = create_lst_of_player () in
   let _ = run_game lst_attribut in
   ()
