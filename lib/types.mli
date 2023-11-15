@@ -15,6 +15,13 @@ type game_status =
   | Finished of color option
       (** Game is finished. Option holds the winning color if there is one. *)
 
+type player = {
+  position : position;
+  walls_left : int;
+  color : color;
+  strategy : strategy;
+}
+
 exception InvalidWallPosition of position * position * string
 (** Raised when a wall is placed in an invalid position. *)
 

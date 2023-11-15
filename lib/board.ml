@@ -1,12 +1,5 @@
 open Types
 
-type player = {
-  position : position;
-  walls_left : int;
-  color : color;
-  strategy : strategy;
-}
-
 type cell_content = Empty | Wall | Player of player
 type board = cell_content array array
 type state = { mutable players : player list; mutable status : game_status }

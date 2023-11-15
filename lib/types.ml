@@ -5,6 +5,13 @@ type strategy = position -> move
 type player_attribut = color * position * strategy
 type game_status = WaitingToStart | InProgress | Finished of color option
 
+type player = {
+  position : position;
+  walls_left : int;
+  color : color;
+  strategy : strategy;
+}
+
 exception InvalidWallPosition of position * position * string
 exception InvalidPlayerPosition of position * string
 exception InvalidMove of string

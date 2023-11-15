@@ -9,7 +9,6 @@ let init_game (attribut_lst : player_attribut list) =
     attribut_lst
 
 let play () =
-  Format.printf "play\n";
   let strat = strategy_current_player () in
   let pos = pos_current_player () in
   let move = strat pos in
@@ -17,13 +16,20 @@ let play () =
   | Wall (pos1, pos2) -> Board.place_wall pos1 pos2
   | Moving pos -> Board.move_player pos
 
+let print_color player =
+  match player.color with
+  | Red -> "red"
+  | Green -> "green"
+  | Blue -> "blue"
+  | Yellow -> "yellow"
+
 let run_game attribut_lst =
   Random.self_init ();
   let rec aux () =
     Board.print_board ();
     try
-      let _ = Board.winning_player () in
-      Format.printf "partie terminée\n"
+      let winner = Board.winning_player () in
+      Format.printf "Player %s win\n" (print_color winner)
     with NoWinningPlayer _ ->
       play ();
       aux ()

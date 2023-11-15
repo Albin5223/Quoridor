@@ -1,6 +1,3 @@
-type player
-(** Represents a player in the game. Contains position, walls left, and color. *)
-
 type cell_content
 (** Represents the content of a cell on the game board. Can be empty, a wall, or a player. *)
 
@@ -121,7 +118,7 @@ val add_player_to_board :
     @raise InvalidPlayerPosition if the position is not on a border or already occupied.
     @raise InvalidGameState if the game is not in WaitingToStart state. *)
 
-val winning_player : unit -> player
+val winning_player : unit -> Types.player
 (** Returns the player who has reached their target zone.
     @raise NoWinningPlayer if no player has reached their target zone. *)
 
