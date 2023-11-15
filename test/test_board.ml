@@ -109,6 +109,16 @@ let test_place_wall_invalid =
         Alcotest.fail "No exception raised for invalid wall placement"
       with InvalidWallPosition _ -> ())
 
+let test_starting_game =
+  Alcotest.test_case "impossible_situation_to_start_game" `Quick (fun () -> 
+    Board.reset_board ();
+    try 
+      Board.start_game ();
+      Alcotest.fail "No exception raised for starting incomplete game"
+    with
+      InvalidNumberPlayer _  -> ())
+
+
 let test_winning_player_none =
   Alcotest.test_case "winning_player_none" `Quick (fun () ->
       Board.reset_board ();
@@ -137,15 +147,44 @@ let test_validate_position_invalid =
         Alcotest.fail "Invalid position not detected"
       with InvalidPosition _ -> ())
 
+let test_are_not_wall_positions =
+  QCheck.Test.make ~name: "invalid wall positions" ~count:1000
+  (QCheck.pair QCheck.small_int QCheck.small_int)
+  (fun (x,y) -> 
+    QCheck.assume((x mod 2 <> 1 || y mod 2 <> 0) && y mod 2 <> 1 && x>=0 && y>=0 && x<=16 && y<=16);
+    not (Board.is_wall_position (x,y)))
+
+let test_are_not_player_positions =
+  QCheck.Test.make ~name: "invalid player positions" ~count:1000
+  (QCheck.pair QCheck.small_int QCheck.small_int)
+  (fun (x,y) -> 
+    QCheck.assume((x mod 2 <> 0 || y mod 2 <> 0) && x>=0 && y>=0 && x<=16 && y<=16);
+    not (Board.is_player_position (x,y)))
+
+let test_equiv_wallpos_playpos =
+  QCheck.Test.make ~name: "is_wall_position <=> is_not_player_position and vice versa" ~count:1000
+  (QCheck.pair QCheck.small_int QCheck.small_int)
+  (fun (x,y) -> 
+    QCheck.assume (x>=0 && y>=0 && x<=16 && y<=16);
+    let p = Board.is_wall_position (x,y) in let q = Board.is_player_position (x,y)
+    in let left_impl = QCheck.(==>) p (not q)
+    in let right_impl = QCheck.(==>) (not p) q in 
+    left_impl && right_impl
+    )
+
 let () =
   let open Alcotest in
   run "Board Tests"
     [
       ( "add_player_to_board",
         [ test_add_player_valid; test_add_player_invalid_position ] );
+      ("start_game", [test_starting_game]);
       ("move_player", [ test_move_player_valid; test_move_player_invalid ]);
       ("place_wall", [ test_place_wall_valid; test_place_wall_invalid ]);
       ("winning_player", [ test_winning_player_none ]);
       ( "validate_position",
         [ test_validate_position_valid; test_validate_position_invalid ] );
+      "wall_positions", List.map (QCheck_alcotest.to_alcotest) [test_are_not_wall_positions];
+      "player_positions", List.map (QCheck_alcotest.to_alcotest) [test_are_not_player_positions];
+      "equivalence_wallPos_and_playPos", List.map (QCheck_alcotest.to_alcotest) [test_equiv_wallpos_playpos]
     ]
