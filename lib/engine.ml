@@ -18,7 +18,6 @@ let play () =
   let pos = (current_player ()).current_position in
   let move = strat pos in
   Board.do_move move
-  
 
 let run_game player_lst =
   Random.self_init ();

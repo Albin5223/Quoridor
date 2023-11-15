@@ -349,11 +349,10 @@ let add_player_to_board player =
   game_board.(y).(x) <- Player player;
   game_state.players <- game_state.players @ [ player ]
 
-let do_move (move : Types.move) = 
+let do_move (move : Types.move) =
   match move with
   | Placing_wall (pos1, pos2) -> place_wall pos1 pos2
   | Moving pos -> move_player pos
-
 
 let winning_player () =
   (* Function to check if a player has reached their target zone *)

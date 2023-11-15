@@ -83,7 +83,6 @@ val validate_wall_placement :
     @raise InvalidWallPosition if the wall positions are not valid or not adjacent and aligned.
     @raise InvalidGameState if the game is not in progress. *)
 
-
 val add_player_to_board : Types.player -> unit
 (** Adds a player to the game board.
     @param player The player to add.

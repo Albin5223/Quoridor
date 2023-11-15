@@ -113,7 +113,7 @@ let test_place_wall_valid =
       let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
       Board.add_player_to_board p2;
       Board.start_game ();
-      Board.do_move (Placing_wall ((1, 0),(1, 1)));
+      Board.do_move (Placing_wall ((1, 0), (1, 1)));
       Alcotest.(check bool)
         "Wall placed correctly" true
         (Board.is_wall (1, 0) && Board.is_wall (1, 1)))
