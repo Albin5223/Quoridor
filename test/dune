@@ -1,2 +1,3 @@
-(test
- (name quoridor))
+(tests
+ (names test_board test_engine)
+ (libraries quoridor alcotest qcheck qcheck-alcotest))
