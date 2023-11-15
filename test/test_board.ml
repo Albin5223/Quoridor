@@ -193,21 +193,24 @@ let test_equiv_wallpos_playpos =
     left_impl && right_impl
     )
 
-let test_invalid_adj_players_position =
-  Alcotest.test_case "adjacent_players raises an exception for invalid position"
+
+let test_invalid_pos_function string f =
+  Alcotest.test_case string
   `Quick (fun () -> 
     try 
-      Board.adjacent_players (-1,-1) |> ignore
+      f (-1,-1) |> ignore
     with
       InvalidPosition _ -> ())
+let test_invalid_adj_players_position =
+  test_invalid_pos_function "adjacent_players raises an exception for invalid position"
+  (Board.adjacent_players)
 
 let test_invalid_adj_walls_position =
-  Alcotest.test_case "adjacent_players raises an exception for invalid position"
-  `Quick (fun () -> 
-    try 
-      Board.adjacent_walls (-1,-1) |> ignore
-    with
-      InvalidPosition _ -> ())
+  test_invalid_pos_function "adjacent_walls raises an exception for invalid position"
+  (Board.adjacent_walls)
+let test_list_of_moves_invalid_pos =
+  test_invalid_pos_function "list_of_moves raises an exception for invalid position"
+  (Board.list_of_moves)
 
 let () =
   let open Alcotest in
@@ -225,5 +228,6 @@ let () =
       "wall_positions", List.map (QCheck_alcotest.to_alcotest) [test_are_not_wall_positions];
       "player_positions", List.map (QCheck_alcotest.to_alcotest) [test_are_not_player_positions];
       "equivalence_wallPos_and_playPos", List.map (QCheck_alcotest.to_alcotest) [test_equiv_wallpos_playpos];
-      ("adjacent_functions", [test_invalid_adj_players_position; test_invalid_adj_walls_position])
+      ("adjacent_functions", [test_invalid_adj_players_position; test_invalid_adj_walls_position]);
+      ("list_of_moves", [test_list_of_moves_invalid_pos])
     ]
