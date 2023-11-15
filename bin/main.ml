@@ -31,7 +31,7 @@ let pos_wall_random () =
     | InvalidWallPlacement _ -> generate_random_wall_pos ()
   in
   let wall_pos1, wall_pos2 = generate_random_wall_pos () in
-  Wall (wall_pos1, wall_pos2)
+  Placing_wall (wall_pos1, wall_pos2)
 
 (** This function defines our strategy for our players which is to play randomly*)
 let det_move pos =

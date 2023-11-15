@@ -17,9 +17,8 @@ let play () =
   let strat = (current_player ()).strategy in
   let pos = (current_player ()).current_position in
   let move = strat pos in
-  match move with
-  | Wall (pos1, pos2) -> Board.place_wall pos1 pos2
-  | Moving pos -> Board.move_player pos
+  do_move move;
+  
 
 let run_game player_lst =
   Random.self_init ();

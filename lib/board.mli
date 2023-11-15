@@ -107,6 +107,11 @@ val add_player_to_board : Types.player -> unit
     @raise InvalidGameState if the game is not in WaitingToStart state.
     @raise InvalidPlayerWallsLeft if a player haven't 10 walls *)
 
+val do_move : Types.move -> unit
+(** Translates the given movement of the player on the board (he places a wall or moves)
+    @param move the movement of the player who must play.
+    *)
+
 val winning_player : unit -> Types.player
 (** Returns the player who has reached their target zone.
     @raise NoWinningPlayer if no player has reached their target zone. *)
