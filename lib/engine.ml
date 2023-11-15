@@ -28,7 +28,7 @@ let run_game player_lst =
     Board.print_board ();
     try
       let winner = Board.winning_player () in
-      Format.printf "Player %s win\n" (print_color winner)
+      Format.printf "Player %s won\n" (print_color winner)
     with NoWinningPlayer _ ->
       play ();
       aux ()
