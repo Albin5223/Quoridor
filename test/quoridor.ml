@@ -73,8 +73,8 @@ let test_player_color =
 
 let test_walls_left () =
   Alcotest.(check bool) "same int" true 
-  (p1.walls_left = 10 && p2.walls_left = 10 && p3.walls_left = 10 && p4.walls_left = 10)
-   
+  (p1.walls_left = 10 && p2.walls_left = 10 && p3.walls_left = 10 && p4.walls_left = 10) (* for_all doesnt work *)
+
 
 let () =
   let open Alcotest in
