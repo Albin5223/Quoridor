@@ -18,8 +18,7 @@ type player = {
 type game_status =
   | WaitingToStart  (** Game is initialized but not started. *)
   | InProgress  (** Game is currently in progress. *)
-  | Finished of player
-      (** Game is finished. Holds the winning player. *)
+  | Finished of player  (** Game is finished. Holds the winning player. *)
 
 exception InvalidWallPosition of position * position * string
 (** Raised when a wall is placed in an invalid position. *)

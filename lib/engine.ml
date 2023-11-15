@@ -2,7 +2,13 @@ open Types
 open Board
 
 let create_player pos walls_left color strat =
-  { start_position = pos; current_position = pos; walls_left; color; strategy = strat }
+  {
+    start_position = pos;
+    current_position = pos;
+    walls_left;
+    color;
+    strategy = strat;
+  }
 
 let add_players player_lst =
   List.iter (fun pl -> Board.add_player_to_board pl) player_lst
