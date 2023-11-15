@@ -1,4 +1,5 @@
-val create_player : Types.position -> int -> Types.color -> Types.strategy -> Types.player
+val create_player :
+  Types.position -> int -> Types.color -> Types.strategy -> Types.player
 (** Return a new player with the specified attributes
     @param pos The starting position of the player on the game board.
     @param walls_left The number of walls remaining of the player;

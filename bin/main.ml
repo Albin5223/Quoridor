@@ -15,7 +15,7 @@ let random_move pos =
       let newPos = List.nth lstMv r in
       Moving newPos
 
-(**This function returns 2 random positions where we will place a wall*)      
+(**This function returns 2 random positions where we will place a wall*)
 let pos_wall_random () =
   let rec generate_random_wall_pos () =
     let x1 = Random.int board_size in
@@ -39,7 +39,6 @@ let det_move pos =
   if r == 0 && (current_player ()).walls_left > 0 then pos_wall_random ()
   else random_move pos
 
- 
 (** Creates and returns the list of players with their position, color and our strategy 
     @param nb_players The number of players to add to the game
     @raise InvalidNumberPlayer if the number of players is not between 2 and 4.
@@ -55,9 +54,11 @@ let create_lst_of_player nb_players =
       (board_size - 1, board_size / 2);
     ]
   in
-  if nb_players < 2 || nb_players > 4 then raise
-    (InvalidNumberPlayer ( nb_players,
-         "Number of players must be between 2 and 4 to start the game" ))
+  if nb_players < 2 || nb_players > 4 then
+    raise
+      (InvalidNumberPlayer
+         ( nb_players,
+           "Number of players must be between 2 and 4 to start the game" ))
   else
     List.init nb_players (fun i ->
         create_player (List.nth positions i) 10 (List.nth colors i) det_move)

@@ -15,7 +15,6 @@ let play () =
   | Wall (pos1, pos2) -> Board.place_wall pos1 pos2
   | Moving pos -> Board.move_player pos
 
-
 let run_game player_lst =
   Random.self_init ();
   let rec aux () =
