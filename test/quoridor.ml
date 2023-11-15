@@ -75,6 +75,14 @@ let test_walls_left () =
   Alcotest.(check bool) "same int" true 
   (p1.walls_left = 10 && p2.walls_left = 10 && p3.walls_left = 10 && p4.walls_left = 10) (* for_all doesnt work *)
 
+let list_of_moves_are_valid_pos () =  
+  let test_pos (player: Types.player) = 
+    List.for_all (fun position -> Board.is_valid_position position) (Engine.list_of_moves player.position)
+  in 
+    Alcotest.(check bool) "same bool" true
+    (test_pos p1 && test_pos p2 && test_pos p3 && test_pos p4)
+
+
 
 let () =
   let open Alcotest in
@@ -87,4 +95,5 @@ let () =
       "correct_player_length", [test_case "There are 4 players" `Quick players_length];
       "correct_color", qch_to_alc_uniq test_player_color;
       "walls_left_amount", [test_case "All players have 10 starting walls" `Quick test_walls_left];
+      "valid_list_of_moves", [test_case "List of moves are valid positions" `Quick list_of_moves_are_valid_pos]
     ];
