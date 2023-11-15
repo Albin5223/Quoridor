@@ -201,6 +201,8 @@ let test_invalid_pos_function string f =
       f (-1,-1) |> ignore
     with
       InvalidPosition _ -> ())
+
+      
 let test_invalid_adj_players_position =
   test_invalid_pos_function "adjacent_players raises an exception for invalid position"
   (Board.adjacent_players)
