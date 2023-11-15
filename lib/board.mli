@@ -1,6 +1,3 @@
-type player
-(** Represents a player in the game. Contains position, walls left, and color. *)
-
 type cell_content
 (** Represents the content of a cell on the game board. Can be empty, a wall, or a player. *)
 
@@ -21,20 +18,14 @@ val start_game : unit -> unit
     @raise InvalidNumberPlayer if the number of players is not between 2 and 4.
     @raise InvalidGameState if the game is not in the WaitingToStart state. *)
 
-val stop_game : Types.color option -> unit
-(** Stops the game and optionally sets the winning color.
-    @param winning_color_option The winning color, if there is one.
+val stop_game : Types.player option -> unit
+(** Stops the game and optionally sets the winning player.
+    @param winning_color_option The winning player, if there is one.
     @raise InvalidGameState if the game is not in progress. *)
 
-val pos_current_player : unit -> Types.position
-(** Returns the position of the current player.
+val current_player : unit -> Types.player
+(** Returns the current player.
     @raise NoPlayersInGame if there are no players in the game. *)
-
-val walls_left_current_player : unit -> int
-(** Returns the number of walls left for the current player.
-    @raise NoPlayersInGame if there are no players in the game. *)
-
-val strategy_current_player : unit -> Types.strategy
 
 val validate_position : Types.position -> unit
 (** Validates a position on the game board.
@@ -87,7 +78,7 @@ val list_of_moves : Types.position -> Types.position list
     @raise InvalidPlayerPosition if the given position is not a player's position. 
     @note This function takes into account the presence of walls and other players. *)
 
-val validate_wall_placement : int -> Types.position -> Types.position -> unit
+val validate_wall_placement : Types.player -> Types.position -> Types.position -> unit
 (** Validates the placement of a wall by a player.
     @param wallsLeft The number of walls the player has left.
     @param pos1 The first position of the wall.
@@ -111,16 +102,16 @@ val move_player : Types.position -> unit
     @raise InvalidMove if the target position is not reachable.
     @raise InvalidGameState if the game is not in progress. *)
 
-val add_player_to_board : Types.color -> Types.position -> Types.strategy -> unit
+val add_player_to_board : Types.player -> unit
 (** Adds a player to the game board.
-    @param color The color of the player.
-    @param pos The position of the player.
+    @param player The player to add.
     @raise InvalidNumberPlayer if there are already 4 players.
     @raise InvalidPlayerColor if a player with the same color already exists.
     @raise InvalidPlayerPosition if the position is not on a border or already occupied.
-    @raise InvalidGameState if the game is not in WaitingToStart state. *)
+    @raise InvalidGameState if the game is not in WaitingToStart state.
+    @raise InvalidPlayerWallsLeft if a player haven't 10 walls *)
 
-val winning_player : unit -> player
+val winning_player : unit -> Types.player
 (** Returns the player who has reached their target zone.
     @raise NoWinningPlayer if no player has reached their target zone. *)
 
