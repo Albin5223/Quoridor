@@ -36,10 +36,16 @@ let test_position =
   in 
   qcheck_test "For all positions (x,y) such that x,y in [|0,16|]², (x,y) is a valid position " random_correct_pos (fun pair -> Board.is_valid_position pair)
 
+let test_position2 =
+  qcheck_test "For all positions, out of bounds positions are invalid ones" 
+  (QCheck.pair QCheck.small_int QCheck.small_int)
+  (fun (x,y) -> QCheck.assume (x <= -1 || x>=17 || y <= -1 || y >= 17); not (Board.is_valid_position (x,y)))
+
 let test_players = 
-  let zero_or_one = QCheck.(--) 5 50 in
-  qcheck_test "For all n, init_game n when n in [|5,50|], returns an exception" 
-  zero_or_one (fun n -> returns_exception Engine.init_game n)
+  qcheck_test "For all n, init_game n when n not in [|2,4|], returns an exception" 
+  QCheck.small_int (fun n -> 
+    QCheck.assume (n <= 1 || n >= 5);
+    returns_exception Engine.init_game n)
 
 let test_players_2 () =
   Alcotest.(check bool) "same bool" true (returns_exception Engine.init_game 0)
@@ -88,6 +94,7 @@ let () =
   let open Alcotest in
     run "Quoridor tests" [
       "correct_positions" , qch_to_alc_uniq test_position;
+      "incorrect positions", qch_to_alc_uniq test_position2;
       "incorrect_nb_of_players" , qch_to_alc_uniq test_players @ 
         [test_case "0 player" `Quick test_players_2; test_case "1 player" `Quick test_players_3];
       "finite_game", qch_to_alc_uniq test_finite_game;
