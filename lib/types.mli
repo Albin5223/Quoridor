@@ -2,7 +2,7 @@
 type color = Red | Green | Blue | Yellow
 
 type position = int * int
-type move = Wall of position * position | Moving of position
+type move = Placing_wall of position * position | Moving of position
 type strategy = position -> move
 
 type player = {

@@ -30,7 +30,7 @@ module Strategy = struct
       | InvalidWallPlacement _ -> generate_random_wall_pos ()
     in
     let wall_pos1, wall_pos2 = generate_random_wall_pos () in
-    Wall (wall_pos1, wall_pos2)
+    Placing_wall (wall_pos1, wall_pos2)
 
   let det_move pos =
     let r = Random.int 3 in
@@ -87,7 +87,7 @@ let test_move_player_valid =
       let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
       Board.add_player_to_board p2;
       Board.start_game ();
-      Board.move_player (8, 14);
+      Board.do_move (Moving (8, 14));
       Alcotest.(check bool)
         "Player moved correctly" true
         (Board.is_player (8, 14)))
@@ -101,7 +101,7 @@ let test_move_player_invalid =
       Board.add_player_to_board p2;
       Board.start_game ();
       try
-        Board.move_player (8, 13);
+        Board.do_move (Moving (8, 13));
         Alcotest.fail "No exception raised for invalid move"
       with InvalidMove _ -> ())
 
@@ -113,7 +113,7 @@ let test_place_wall_valid =
       let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
       Board.add_player_to_board p2;
       Board.start_game ();
-      Board.place_wall (1, 0) (1, 1);
+      Board.do_move (Placing_wall ((1, 0), (1, 1)));
       Alcotest.(check bool)
         "Wall placed correctly" true
         (Board.is_wall (1, 0) && Board.is_wall (1, 1)))
@@ -127,7 +127,7 @@ let test_place_wall_invalid =
       Board.add_player_to_board p2;
       Board.start_game ();
       try
-        Board.place_wall (1, 1) (1, 3);
+        Board.do_move (Placing_wall ((1, 1), (1, 3)));
         Alcotest.fail "No exception raised for invalid wall placement"
       with InvalidWallPosition _ -> ())
 
@@ -248,7 +248,7 @@ let test_is_wall =
       in
       Engine.add_players [ player1; player2 ];
       Board.start_game ();
-      Board.place_wall (1, 0) (1, 1);
+      Board.do_move (Placing_wall ((1, 0), (1, 1)));
       Alcotest.(check bool)
         "Wall is present" true
         (Board.is_wall (1, 0) && Board.is_wall (1, 1)))

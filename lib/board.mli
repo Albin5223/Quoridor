@@ -83,21 +83,6 @@ val validate_wall_placement :
     @raise InvalidWallPosition if the wall positions are not valid or not adjacent and aligned.
     @raise InvalidGameState if the game is not in progress. *)
 
-val place_wall : Types.position -> Types.position -> unit
-(** Places a wall on the board.
-    @param pos1 The first position of the wall.
-    @param pos2 The second position of the wall.
-    @raise InvalidWallPlacement if the player has no walls left to place or the wall placement is invalid or if the wall placement blocks a player's path to goal.
-    @raise InvalidWallPosition if the given positions are not valid wall positions or if they are not adjacent and aligned.
-    @raise InvalidGameState if the game is not in progress.
-    @raise InvalidPosition if either position is outside the board boundaries. *)
-
-val move_player : Types.position -> unit
-(** Moves the current player to a new position.
-    @param destPos The destination position.
-    @raise InvalidMove if the target position is not reachable.
-    @raise InvalidGameState if the game is not in progress. *)
-
 val add_player_to_board : Types.player -> unit
 (** Adds a player to the game board.
     @param player The player to add.
@@ -106,6 +91,11 @@ val add_player_to_board : Types.player -> unit
     @raise InvalidPlayerPosition if the position is not on a border or already occupied or if starting position is different of the placement of the player.
     @raise InvalidGameState if the game is not in WaitingToStart state.
     @raise InvalidPlayerWallsLeft if a player haven't 10 walls *)
+
+val do_move : Types.move -> unit
+(** Translates the given movement of the player on the board (he places a wall or moves)
+    @param move the movement of the player who must play.
+    *)
 
 val winning_player : unit -> Types.player
 (** Returns the player who has reached their target zone.

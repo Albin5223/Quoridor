@@ -349,6 +349,11 @@ let add_player_to_board player =
   game_board.(y).(x) <- Player player;
   game_state.players <- game_state.players @ [ player ]
 
+let do_move (move : Types.move) =
+  match move with
+  | Placing_wall (pos1, pos2) -> place_wall pos1 pos2
+  | Moving pos -> move_player pos
+
 let winning_player () =
   (* Function to check if a player has reached their target zone *)
   let player_reached_target player =
@@ -356,16 +361,16 @@ let winning_player () =
       match player.start_position with
       | x, _ when x = 0 ->
           (* Start at left border *)
-          fun (_, y) -> y = board_size - 1
+          fun (x, _) -> x = board_size - 1
       | x, _ when x = board_size - 1 ->
           (* Start at right border *)
-          fun (_, y) -> y = 0
+          fun (x, _) -> x = 0
       | _, y when y = 0 ->
           (* Start at top border *)
-          fun (x, _) -> x = board_size - 1
+          fun (_, y) -> y = board_size - 1
       | _, y when y = board_size - 1 ->
           (* Start at bottom border *)
-          fun (x, _) -> x = 0
+          fun (_, y) -> y = 0
       | _ ->
           raise
             (InvalidPlayerPosition
