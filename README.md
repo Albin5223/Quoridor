@@ -7,7 +7,7 @@ PPO5-2023 / "Quoridor" Project
 
 ## Rules
 
-See rules [here](doc/Quoridor-specification.pdf)
+See rules [here](doc/Quoridor.pdf)
 
 ## Development environment setup
 
