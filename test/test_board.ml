@@ -193,7 +193,6 @@ let test_equiv_wallpos_playpos =
     left_impl && right_impl
     )
 
-
 let test_invalid_pos_function string f =
   Alcotest.test_case string
   `Quick (fun () -> 
@@ -202,7 +201,6 @@ let test_invalid_pos_function string f =
     with
       InvalidPosition _ -> ())
 
-      
 let test_invalid_adj_players_position =
   test_invalid_pos_function "adjacent_players raises an exception for invalid position"
   (Board.adjacent_players)
