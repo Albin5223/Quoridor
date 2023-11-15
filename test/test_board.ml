@@ -69,7 +69,7 @@ let () =
   let open Alcotest in
   run "Board Tests"
     [
-      ("Start Game Tests", [ test_start_game_with_valid_number_of_players ();
+      ("start_game", [ test_start_game_with_valid_number_of_players ();
                              test_start_game_with_invalid_number_of_players () ]);
     ]
 
