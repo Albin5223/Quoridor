@@ -170,7 +170,7 @@ let test_validate_position_invalid =
       | _ -> Alcotest.fail "Unexpected exception type for invalid position")
 
 let test_validate_position_prop =
-  QCheck.Test.make ~name:"validate_position_prop"
+  QCheck.Test.make ~name:"validate_position_prop" ~count:1000
     QCheck.(pair int int)
     (fun (x, y) ->
       try
@@ -190,6 +190,14 @@ let test_is_wall_position =
         "Not wall position (0,0)" false
         (Board.is_wall_position (0, 0)))
 
+let test_is_wall_position_prop =
+  QCheck.Test.make ~name:"is_wall_position_validity" ~count:1000
+    (QCheck.pair QCheck.small_int QCheck.small_int) (fun (x, y) ->
+      QCheck.assume
+        (x >= 0 && y >= 0 && x < Board.board_size && y < Board.board_size);
+      Board.is_wall_position (x, y)
+      = ((x mod 2 = 1 && y mod 2 = 0) || y mod 2 = 1))
+
 let test_are_not_wall_positions =
   QCheck.Test.make ~name:"invalid wall positions" ~count:1000
     (QCheck.pair QCheck.small_int QCheck.small_int) (fun (x, y) ->
@@ -207,6 +215,13 @@ let test_is_player_position =
       Alcotest.(check bool)
         "Not player position (1,0)" false
         (Board.is_player_position (1, 0)))
+
+let test_is_player_position_prop =
+  QCheck.Test.make ~name:"is_player_position_validity" ~count:1000
+    (QCheck.pair QCheck.small_int QCheck.small_int) (fun (x, y) ->
+      QCheck.assume
+        (x >= 0 && y >= 0 && x < Board.board_size && y < Board.board_size);
+      Board.is_player_position (x, y) = (x mod 2 = 0 && y mod 2 = 0))
 
 let test_are_not_player_positions =
   QCheck.Test.make ~name:"invalid player positions" ~count:1000
@@ -289,6 +304,36 @@ let test_list_of_moves_invalid_pos =
   test_invalid_pos_function
     "list_of_moves raises an exception for invalid position" Board.list_of_moves
 
+let test_is_wall_between =
+  Alcotest.test_case "is_wall_between" `Quick (fun () ->
+      Board.reset_board ();
+      let player1 =
+        Engine.create_player
+          (0, Board.board_size / 2)
+          10 Types.Red
+          (fun _ -> Moving (0, 0))
+      in
+      let player2 =
+        Engine.create_player
+          (Board.board_size - 1, Board.board_size / 2)
+          10 Types.Green
+          (fun _ -> Moving (0, 0))
+      in
+      Engine.add_players [ player1; player2 ];
+
+      Board.start_game ();
+
+      let wall_pos1 = (1, 0) in
+      let wall_pos2 = (1, 1) in
+      Board.place_wall wall_pos1 wall_pos2;
+
+      let pos1 = (0, 0) in
+      let pos2 = (2, 0) in
+
+      Alcotest.(check bool)
+        "Wall is between pos1 and pos2" true
+        (Board.is_wall_between pos1 pos2))
+
 let () =
   let open Alcotest in
   run "Board Tests"
@@ -317,10 +362,15 @@ let () =
       ( "player_positions",
         List.map QCheck_alcotest.to_alcotest [ test_are_not_player_positions ]
       );
+      ( "is_wall_position_prop",
+        List.map QCheck_alcotest.to_alcotest [ test_is_wall_position_prop ] );
+      ( "is_player_position_prop",
+        List.map QCheck_alcotest.to_alcotest [ test_is_player_position_prop ] );
       ( "equivalence_wallPos_and_playPos",
         List.map QCheck_alcotest.to_alcotest [ test_equiv_wallpos_playpos ] );
       ( "adjacent_functions",
         [ test_invalid_adj_players_position; test_invalid_adj_walls_position ]
       );
       ("list_of_moves", [ test_list_of_moves_invalid_pos ]);
+      ("is_wall_between", [ test_is_wall_between ]);
     ]
