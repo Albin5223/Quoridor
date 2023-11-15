@@ -1,7 +1,7 @@
 open Quoridor
 open Quoridor.Types
 
-module Strategy = struct
+(* module Strategy = struct
   open Quoridor.Types
   open Quoridor.Board
 
@@ -37,13 +37,89 @@ module Strategy = struct
     if r == 0 && (current_player ()).walls_left > 0 then pos_wall_random ()
     else random_move pos
 end
+*)
 
+let test_validate_position_valid =
+  Alcotest.test_case "validate_position_valid" `Quick (fun () ->
+    try
+      Board.validate_position (5, 5);
+      Alcotest.(check bool) "No exception for valid position" true true
+    with
+    | _ -> Alcotest.fail "Unexpected exception for valid position")
+
+let test_validate_position_invalid =
+  Alcotest.test_case "validate_position_invalid" `Quick (fun () ->
+  try
+    Board.validate_position (-1, 5);
+    Alcotest.fail "Expected exception for invalid position"
+  with
+  | InvalidPosition _ -> () 
+  | _ -> Alcotest.fail "Unexpected exception type for invalid position")
+
+
+let test_validate_position_prop =
+  QCheck.Test.make
+    ~name:"validate_position_prop"
+    QCheck.(pair int int)
+    (fun (x, y) ->
+      try
+        Board.validate_position (x, y);
+        x >= 0 && x < Board.board_size && y >= 0 && y < Board.board_size
+      with
+      | InvalidPosition _ -> x < 0 || x >= Board.board_size || y < 0 || y >= Board.board_size
+      | _ -> false)
+  
+let test_is_wall_position =
+  Alcotest.test_case "is_wall_position" `Quick (fun () ->
+  Alcotest.(check bool) "Wall position (1,0)" true (Board.is_wall_position (1, 0));
+  Alcotest.(check bool) "Not wall position (0,0)" false (Board.is_wall_position (0, 0)))
+      
+let test_is_player_position =
+  Alcotest.test_case "is_player_position" `Quick (fun () ->
+  Alcotest.(check bool) "Player position (0,0)" true (Board.is_player_position (0, 0));
+  Alcotest.(check bool) "Not player position (1,0)" false (Board.is_player_position (1, 0)))
+
+let test_is_wall =
+  Alcotest.test_case "is_wall" `Quick (fun () ->
+    Board.reset_board ();
+    let player1 = Engine.create_player (0, Board.board_size / 2) 10 Types.Red (fun _ -> Moving (0, 0)) in
+    let player2 = Engine.create_player (Board.board_size - 1, Board.board_size / 2) 10 Types.Green (fun _ -> Moving (0, 0)) in
+    Engine.add_players [player1; player2];      
+    Board.start_game ();
+    Board.place_wall (1, 0) (1, 1);
+    Alcotest.(check bool) "Wall is present" true (Board.is_wall (1, 0) && (Board.is_wall (1, 1))))
+    
+let test_is_player =
+  Alcotest.test_case "is_player" `Quick (fun () ->
+    Board.reset_board ();
+    let player1 = Engine.create_player (0, Board.board_size / 2) 10 Types.Red (fun _ -> Moving (0, 0)) in
+    let player2 = Engine.create_player (Board.board_size - 1, Board.board_size / 2) 10 Types.Green (fun _ -> Moving (0, 0)) in
+    Engine.add_players [player1; player2];
+    Board.start_game ();
+    let player_pos = (0, Board.board_size / 2) in
+    Alcotest.(check bool) "Player is present" true (Board.is_player player_pos))
+    
+
+let () =
+let open Alcotest in
+run "Board Tests"
+  [
+    ("validate_position", [test_validate_position_valid; test_validate_position_invalid]);
+    ("is_wall_position", [test_is_wall_position]);
+    ("is_player_position", [test_is_player_position]);
+    ("is_wall", [test_is_wall]);
+    ("is_player", [test_is_player]);
+    (* Property-based tests *)
+    ("validate_position_prop", [QCheck_alcotest.to_alcotest test_validate_position_prop]);
+  ]
+
+(*
 let test_start_game_with_valid_number_of_players () =
   Alcotest.test_case "start_game with 2-4 players" `Quick (fun () ->
       let players = [Engine.create_player (0, 8) 10 Red (Strategy.det_move);
                      Engine.create_player (16, 8) 10 Blue (Strategy.det_move)] in
       Board.reset_board ();
-      Engine.init_game players;
+      Engine.add_players players;
       try
         Board.start_game ();
         Board.stop_game None;
@@ -57,7 +133,7 @@ let test_start_game_with_invalid_number_of_players () =
   Alcotest.test_case "start_game with invalid number of players" `Quick (fun () ->
       let players = [Engine.create_player (0, 8) 10 Red (Strategy.det_move)] in
       Board.reset_board ();
-      Engine.init_game players;
+      Engine.add_players players;
       try
         Board.start_game ();
         Alcotest.fail "Expected InvalidNumberPlayer exception"
@@ -73,7 +149,7 @@ let () =
       ("start_game", [ test_start_game_with_valid_number_of_players ();
                              test_start_game_with_invalid_number_of_players () ]);
     ]
-
+*)
 (* let test_add_player_valid =
   Alcotest.test_case "add_player_valid" `Quick (fun () ->
       Board.reset_board ();

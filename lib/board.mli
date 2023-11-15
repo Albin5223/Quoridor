@@ -18,11 +18,6 @@ val start_game : unit -> unit
     @raise InvalidNumberPlayer if the number of players is not between 2 and 4.
     @raise InvalidGameState if the game is not in the WaitingToStart state. *)
 
-val stop_game : Types.player option -> unit
-(** Stops the game and optionally sets the winning player.
-    @param winning_color_option The winning player, if there is one.
-    @raise InvalidGameState if the game is not in progress. *)
-
 val current_player : unit -> Types.player
 (** Returns the current player.
     @raise NoPlayersInGame if there are no players in the game. *)
@@ -108,7 +103,7 @@ val add_player_to_board : Types.player -> unit
     @param player The player to add.
     @raise InvalidNumberPlayer if there are already 4 players.
     @raise InvalidPlayerColor if a player with the same color already exists.
-    @raise InvalidPlayerPosition if the position is not on a border or already occupied.
+    @raise InvalidPlayerPosition if the position is not on a border or already occupied or if starting position is different of the placement of the player.
     @raise InvalidGameState if the game is not in WaitingToStart state.
     @raise InvalidPlayerWallsLeft if a player haven't 10 walls *)
 

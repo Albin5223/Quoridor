@@ -182,7 +182,7 @@ let list_of_moves pos =
     [] move_vectors
 
 let dfs_path_exists player pos1 pos2 =
-  let start_pos = player.position in
+  let start_pos = player.current_position in
 
   if not (is_player_position start_pos) then
     raise
@@ -273,7 +273,7 @@ let place_wall pos1 pos2 =
       (fun p -> if compare_player p player then updated_player else p)
       game_state.players;
 
-  let x, y = player.position in
+  let x, y = player.current_position in
   game_board.(y).(x) <- Player updated_player;
 
   update_player_order ()
@@ -281,7 +281,7 @@ let place_wall pos1 pos2 =
 let move_player pos =
   validate_game_in_progress_status ();
 
-  let current_pos = (current_player ()).position in
+  let current_pos = (current_player ()).current_position in
   if not (List.exists (( = ) pos) (list_of_moves current_pos)) then
     raise
       (InvalidMove
@@ -291,7 +291,7 @@ let move_player pos =
     game_board.(y).(x) <- Empty;
 
     (* First update the player in the list, then in the game_board *)
-    let updated_player = { (current_player ()) with position = pos } in
+    let updated_player = { (current_player ()) with current_position = pos } in
     game_state.players <-
       List.map
         (fun p ->
@@ -319,6 +319,12 @@ let add_player_to_board player =
       (InvalidNumberPlayer
          (nbPlayers, "Cannot have more than 4 players on the board"));
 
+  if player.current_position <> player.start_position then
+    raise
+      (InvalidPlayerPosition
+         ( player.current_position,
+           "Player must be placed on their start position" ));
+
   if List.exists (fun p -> p.color = player.color) current_players then
     raise
       (InvalidPlayerColor
@@ -329,43 +335,44 @@ let add_player_to_board player =
       (InvalidPlayerWallsLeft
          (player.walls_left, "A player must have 10 walls to start the game"));
 
-  let x, y = player.position in
-  if not (is_border_position player.position) then
+  let x, y = player.current_position in
+  if not (is_border_position player.current_position) then
     raise
       (InvalidPlayerPosition
-         (player.position, "Player must be placed on a border"));
-  if is_player player.position then
+         (player.current_position, "Player must be placed on a border"));
+  if is_player player.current_position then
     raise
       (InvalidPlayerPosition
-         (player.position, "Player position is already occupied"));
+         (player.current_position, "Player position is already occupied"));
 
   (* Adding the player to the list and to the game_board *)
   game_board.(y).(x) <- Player player;
   game_state.players <- game_state.players @ [ player ]
 
 let winning_player () =
-  (* Hashtable to associate colors with the conditions to check if they are in their target zones *)
-  let colors_zones = Hashtbl.create 4 in
-  Hashtbl.add colors_zones Red (fun _ y -> y = board_size - 1);
-  Hashtbl.add colors_zones Green (fun x _ -> x = board_size - 1);
-  Hashtbl.add colors_zones Blue (fun _ y -> y = 0);
-  Hashtbl.add colors_zones Yellow (fun x _ -> x = 0);
-
   (* Function to check if a player has reached their target zone *)
   let player_reached_target player =
-    Hashtbl.fold
-      (fun k v acc ->
-        acc
-        ||
-        if k = player.color then v (fst player.position) (snd player.position)
-        else false)
-      colors_zones false
+    let target_zone =
+      match player.start_position with
+      | (x, _) when x = 0 -> (* Start at left border *)
+          fun (_, y) -> y = board_size - 1
+      | (x, _) when x = board_size - 1 -> (* Start at right border *)
+          fun (_, y) -> y = 0
+      | (_, y) when y = 0 -> (* Start at top border *)
+          fun (x, _) -> x = board_size - 1
+      | (_, y) when y = board_size - 1 -> (* Start at bottom border *)
+          fun (x, _) -> x = 0
+      | _ -> raise (InvalidPlayerPosition (player.start_position, "Invalid start position"))
+    in
+    target_zone player.current_position
   in
-
-  try List.find player_reached_target game_state.players
+  try
+    let winner = List.find player_reached_target game_state.players in
+    stop_game winner;
+    winner
   with Not_found ->
     raise (NoWinningPlayer "No player has reached their target zone")
-
+  
 let reset_board () =
   for y = 0 to board_size - 1 do
     for x = 0 to board_size - 1 do
