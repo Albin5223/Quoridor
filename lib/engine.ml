@@ -17,7 +17,7 @@ let play () =
   let strat = (current_player ()).strategy in
   let pos = (current_player ()).current_position in
   let move = strat pos in
-  do_move move;
+  Board.do_move move
   
 
 let run_game player_lst =
