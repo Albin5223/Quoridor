@@ -2,7 +2,7 @@ open Quoridor.Engine
 open Quoridor.Board
 open Quoridor.Types
 
-(**This function returns a position where the player moves based on their current position
+(**This function returns a movement with a position where the player moves based on their current position
     @param pos the player's initial position
     @raise NoMovePossible when the player has no possible movement
     @return the position where the player must move  *)
@@ -15,7 +15,7 @@ let random_move pos =
       let newPos = List.nth lstMv r in
       Moving newPos
 
-(**This function returns 2 random positions where we will place a wall*)
+(**This function returns 2 random positions where we will and we can place a wall*)
 let pos_wall_random () =
   let rec generate_random_wall_pos () =
     let x1 = Random.int board_size in
