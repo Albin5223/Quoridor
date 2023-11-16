@@ -325,7 +325,7 @@ let test_is_wall_between =
 
       let wall_pos1 = (1, 0) in
       let wall_pos2 = (1, 1) in
-      Board.place_wall wall_pos1 wall_pos2;
+      Board.do_move (Placing_wall (wall_pos1, wall_pos2));
 
       let pos1 = (0, 0) in
       let pos2 = (2, 0) in
