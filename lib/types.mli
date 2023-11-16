@@ -2,8 +2,13 @@
 type color = Red | Green | Blue | Yellow
 
 type position = int * int
+(** Represents a position in the game board (x,y)*)
+
+(** Represents a player movement or wall placement in the game board. *)
 type move = Placing_wall of position * position | Moving of position
+
 type strategy = position -> move
+(**Represents the strategy that the player should use to play each turn depending on their position. *)
 
 type player = {
   start_position : position;
@@ -12,7 +17,7 @@ type player = {
   color : color;
   strategy : strategy;
 }
-(** Represents a player in the game. Contains start and current position, walls left, and color. *)
+(** Represents a player in the game. Contains start and current position, walls left, color and strategy. *)
 
 (** Represents the status of the game. *)
 type game_status =
@@ -50,6 +55,7 @@ exception NoWinningPlayer of string
 (** Raised when there is no winning player in a game scenario where one is expected. *)
 
 exception NoPlayersInGame
+(** Raised when there is no player in the game *)
 
 exception NoMovePossible of string
 (** Raised when an operation is attempted on a game with no players. *)
