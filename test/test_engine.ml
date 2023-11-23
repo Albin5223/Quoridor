@@ -196,6 +196,34 @@ let number_of_walls_is_correct =
       (accepcts_only_n_walls ~nb_walls:5 ~nb_players:4);
   ]
 
+(** Moves a player starting from the top to the bottom of the board. It assumes that that player 
+    is the second one and that teh first one is on the left side of the board. There are only
+    two players in the game. *)
+let move_to_the_end_strat _ =
+  List.init (board_size - 1) (fun i ->
+      if i mod 4 = 0 then Moving (2, board_size / 2)
+      else if i mod 2 = 0 then Moving (0, board_size / 2)
+      else Moving (board_size / 2, i + 1))
+  |> List.iter (fun pos ->
+         print_board ();
+         do_move pos);
+  Moving (board_size mod 2 * 2, board_size / 2)
+
+let test_player_cannot_win_on_first_turn strat1 strat2 =
+  Alcotest.test_case "play" `Quick (fun () ->
+      [
+        (Red, (0, board_size / 2), strat1); (Blue, (board_size / 2, 0), strat2);
+      ]
+      |> init_game;
+      Quoridor.Engine.play ();
+      let did_win =
+        try
+          let _ = winning_player in
+          true
+        with NoWinningPlayer _ -> false
+      in
+      Alcotest.(check bool) "player cannot win on first turn" false did_win)
+
 let () =
   let open Alcotest in
   run "Engine"
@@ -216,5 +244,10 @@ let () =
         [ QCheck_alcotest.to_alcotest test_validity_of_random_strategy_with_2_players ] );
       ("create_player", [ test_create_player ]);
       ("add_player", [ test_add_players ] @ number_of_walls_is_correct);
-      ("Game integrity", [ QCheck_alcotest.to_alcotest can_play_two_games ]);
+      ( "Game integrity",
+        [
+          QCheck_alcotest.to_alcotest can_play_two_games;
+          test_player_cannot_win_on_first_turn move_to_the_end_strat
+            first_pick_strat;
+        ] );
     ]
