@@ -204,25 +204,22 @@ let move_to_the_end_strat _ =
       if i mod 4 = 0 then Moving (2, board_size / 2)
       else if i mod 2 = 0 then Moving (0, board_size / 2)
       else Moving (board_size / 2, i + 1))
-  |> List.iter (fun pos ->
-         print_board ();
-         do_move pos);
-  Moving (board_size mod 2 * 2, board_size / 2)
+  |> List.iter (fun pos -> do_move pos);
+  Moving (2, board_size / 2)
 
 let test_player_cannot_win_on_first_turn strat1 strat2 =
   Alcotest.test_case "play" `Quick (fun () ->
-      [
-        (Red, (0, board_size / 2), strat1); (Blue, (board_size / 2, 0), strat2);
-      ]
-      |> init_game;
-      Quoridor.Engine.play ();
-      let did_win =
-        try
-          let _ = winning_player in
-          true
-        with NoWinningPlayer _ -> false
-      in
-      Alcotest.(check bool) "player cannot win on first turn" false did_win)
+      Alcotest.check_raises "Player cannot win on first turn"
+        (NoWinningPlayer "No player has reached their target zone") (fun () ->
+          reset_board ();
+          [
+            (Red, (0, board_size / 2), strat1);
+            (Blue, (board_size / 2, 0), strat2);
+          ]
+          |> init_game;
+          Quoridor.Engine.play ();
+          let _ = winning_player () in
+          ()))
 
 let () =
   let open Alcotest in
