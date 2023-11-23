@@ -1,14 +1,35 @@
-(*open Quoridor
-  open Quoridor.Types
+open Quoridor
+open Engine
+open Quoridor.Types
 
-  module Strategy = struct
+let test_create_player =
+    Alcotest.test_case "create_player" `Quick (fun () ->
+        let _=create_player (-1,0) 0 Red (fun _ -> Moving (0,0))in
+        let _=create_player (800,0) 0 Red (fun _ -> Moving (0,0))in
+        let _=create_player (0,0) 0 Red (fun _ -> Moving (-1,0))in
+        let _=create_player (0,0) 0 Red (fun _ -> Moving (800,0)) in
+        let _=create_player (0,0) 0 Red (fun _ -> Placing_wall ((0,0),(0,0)))in
+        ())
+
+let test_add_players =
+  Alcotest.test_case "add_players" `Quick (fun () ->
+    add_players [
+    create_player (-1,0) 0 Red (fun _ -> Moving (0,0));
+    create_player (800,0) 0 Red (fun _ -> Moving (0,0));
+    create_player (0,0) 0 Red (fun _ -> Moving (-1,0));
+    create_player (0,0) 0 Red (fun _ -> Moving (800,0));
+    create_player (0,0) 0 Red (fun _ -> Placing_wall ((0,0),(0,0)))] 
+  )
+
+
+(*module Strategy = struct
     open Quoridor.Types
     open Quoridor.Board
 
     let random_move pos =
       let lstMv = list_of_moves pos in
       match lstMv with
-      | [] -> raise (NoMove "There is no movement possible for this player")
+      | [] -> raise (NoMovePossible "There is no movement possible for this player")
       | _ ->
           let r = Random.int (List.length lstMv) in
           let newPos = List.nth lstMv r in
@@ -68,9 +89,9 @@
         Board.start_game ();
         Engine.play ();
         Alcotest.(check unit) "Player played a turn" () ())
-
+*)
   let () =
     let open Alcotest in
     run "Engine Tests"
-      [ ("init_game", [ test_init_game ]); ("play", [ test_play ]) ]
-*)
+      [ ("create_player", [ test_create_player ]);
+      ("add_player", [ test_add_players ])]
