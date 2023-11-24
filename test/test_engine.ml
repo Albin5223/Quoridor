@@ -68,10 +68,37 @@ let test_validity_of_random_strategy =
       let _ = create_list_of_player n Strategy.det_move |> run_game in
       true)
 
+let test_create_player =
+  Alcotest.test_case "create_player" `Quick (fun () ->
+      let _ = create_player (-1, 0) 0 Red (fun _ -> Moving (0, 0)) in
+      let _ = create_player (800, 0) 0 Red (fun _ -> Moving (0, 0)) in
+      let _ = create_player (0, 0) 0 Red (fun _ -> Moving (-1, 0)) in
+      let _ = create_player (0, 0) 0 Red (fun _ -> Moving (800, 0)) in
+      let _ =
+        create_player (0, 0) 0 Red (fun _ -> Placing_wall ((0, 0), (0, 0)))
+      in
+      ())
+
+let test_add_players =
+  Alcotest.test_case "add_players" `Quick (fun () ->
+      add_players
+        [
+          create_player (-1, 0) 0 Red (fun _ -> Moving (0, 0));
+          create_player (800, 0) 0 Red (fun _ -> Moving (0, 0));
+          create_player (0, 0) 0 Red (fun _ -> Moving (-1, 0));
+          create_player (0, 0) 0 Red (fun _ -> Moving (800, 0));
+          create_player (0, 0) 0 Red (fun _ -> Placing_wall ((0, 0), (0, 0)));
+        ])
+
 let () =
   let open Alcotest in
-  run "Engine" [ ("Walls cannot be removed", [ test_walls_cannot_be_removed ]);
-  ( "First pick strategy is valid",
+  run "Engine"
+    [
+      ("Walls cannot be removed", [ test_walls_cannot_be_removed ]);
+      ( "First pick strategy is valid",
         [ QCheck_alcotest.to_alcotest test_validity_of_first_pick_strat ] );
       ( "Random Strategy is valid",
-        [ QCheck_alcotest.to_alcotest test_validity_of_random_strategy ] ); ]
+        [ QCheck_alcotest.to_alcotest test_validity_of_random_strategy ] );
+      ("create_player", [ test_create_player ]);
+      ("add_player", [ test_add_players ]);
+    ]
