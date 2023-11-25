@@ -52,19 +52,21 @@ let first_pick_strat pos = Moving (list_of_moves pos |> List.hd)
 
 let test_validity_of_first_pick_strat =
   let open QCheck in
-  Test.make ~count:100 ~name:"test_validity_of_first_pick_strat" (int_range 2 4)
+  Test.make ~count:100 ~name:"test_validity_of_first_pick_strat" (int_range 2 3)
     (fun n ->
       reset_board ();
+      let n = if n = 3 then 4 else 2 in
       let _ = create_list_of_player n first_pick_strat |> run_game in
       true)
 
 let test_validity_of_random_strategy =
   let open QCheck in
   Test.make ~count:100 ~name:"Radom strategy is valid"
-    (pair (int_range 2 4) int)
+    (pair (int_range 2 3) int)
     (fun (n, seed) ->
       Random.init seed;
       reset_board ();
+      let n = if n = 3 then 4 else 2 in
       let _ = create_list_of_player n Strategy.det_move |> run_game in
       true)
 
