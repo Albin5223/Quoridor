@@ -81,18 +81,17 @@ let test_create_player =
 
 let test_add_players =
   Alcotest.test_case "add_players" `Quick (fun () ->
-    try
-      reset_board();
-      add_players
-        [
-          create_player (-1, 0) 0 Red (fun _ -> Moving (0, 0));
-          create_player (800, 0) 0 Red (fun _ -> Moving (0, 0));
-          create_player (0, 0) 0 Red (fun _ -> Moving (-1, 0));
-          create_player (0, 0) 0 Red (fun _ -> Moving (800, 0));
-          create_player (0, 0) 0 Red (fun _ -> Placing_wall ((0, 0), (0, 0)));
-        ]
-    with
-      InvalidPlayerWallsLeft _ -> ())
+      try
+        reset_board ();
+        add_players
+          [
+            create_player (-1, 0) 0 Red (fun _ -> Moving (0, 0));
+            create_player (800, 0) 0 Red (fun _ -> Moving (0, 0));
+            create_player (0, 0) 0 Red (fun _ -> Moving (-1, 0));
+            create_player (0, 0) 0 Red (fun _ -> Moving (800, 0));
+            create_player (0, 0) 0 Red (fun _ -> Placing_wall ((0, 0), (0, 0)));
+          ]
+      with InvalidPlayerWallsLeft _ -> ())
 
 let can_play_two_games =
   let open QCheck in
@@ -104,6 +103,56 @@ let can_play_two_games =
       let _ = create_list_of_player n Strategy.det_move |> run_game in
       true)
 
+let accepcts_only_n_walls ~nb_walls ~nb_players =
+  QCheck.Test.make ~count:1000
+    ~name:
+      (Printf.sprintf "Accepts only %d walls | %d players" nb_walls nb_players)
+    QCheck.(int_range 0 100)
+    (fun walls ->
+      reset_board ();
+      let players =
+        create_list_of_player nb_players (fun _ -> Moving (0, 0))
+        |> List.map (fun player -> { player with walls_left = walls })
+      in
+      try
+        add_players players;
+        if walls = nb_walls then true else false
+      with InvalidPlayerWallsLeft _ -> true)
+
+let number_of_walls_is_correct =
+  [
+    (* Just a dramatic example, QCheck is better for this (see other test cases) *)
+    Alcotest.test_case "Can't have 100" `Quick (fun () ->
+        reset_board ();
+        let players =
+          create_list_of_player 2 (fun _ -> Moving (0, 0))
+          |> List.map (fun player -> { player with walls_left = 100 })
+        in
+
+        try
+          add_players players;
+          failwith "Players can't have 100 walls"
+        with InvalidPlayerWallsLeft _ -> ());
+    Alcotest.test_case "Accepts 10 walls | 2 players" `Quick (fun () ->
+        reset_board ();
+        let players =
+          create_list_of_player 2 (fun _ -> Moving (0, 0))
+          |> List.map (fun player -> { player with walls_left = 10 })
+        in
+        add_players players);
+    Alcotest.test_case "Accepts 5 walls | 4 players" `Quick (fun () ->
+        reset_board ();
+        let players =
+          create_list_of_player 4 (fun _ -> Moving (0, 0))
+          |> List.map (fun player -> { player with walls_left = 5 })
+        in
+        add_players players);
+    QCheck_alcotest.to_alcotest
+      (accepcts_only_n_walls ~nb_walls:10 ~nb_players:2);
+    QCheck_alcotest.to_alcotest
+      (accepcts_only_n_walls ~nb_walls:5 ~nb_players:4);
+  ]
+
 let () =
   let open Alcotest in
   run "Engine"
@@ -114,6 +163,6 @@ let () =
       ( "Random Strategy is valid",
         [ QCheck_alcotest.to_alcotest test_validity_of_random_strategy ] );
       ("create_player", [ test_create_player ]);
-      ("add_player", [ test_add_players ]);
+      ("add_player", [ test_add_players ] @ number_of_walls_is_correct);
       ("Game integrity", [ QCheck_alcotest.to_alcotest can_play_two_games ]);
     ]
