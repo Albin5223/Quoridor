@@ -104,6 +104,24 @@ let can_play_two_games =
       let _ = create_list_of_player n Strategy.det_move |> run_game in
       true)
 
+let test_3_player_game =
+  Alcotest.test_case "3 player game is not allowed" `Quick (fun () ->
+      reset_board ();
+      create_list_of_player 3 first_pick_strat |> add_players;
+      start_game ();
+      failwith "3 player game should not be allowed")
+
+let test_only_2_and_4_players_are_allowed =
+  let open QCheck in
+  Test.make ~count:100 ~name:"Only 2 and 4 players are allowed" (int_range 1 10)
+    (fun n ->
+      try
+        reset_board ();
+        create_list_of_player n first_pick_strat |> add_players;
+        start_game ();
+        if n = 2 || n = 4 then true else false
+      with InvalidNumberPlayer _ -> if n = 2 || n = 4 then false else true)
+
 let () =
   let open Alcotest in
   run "Engine"
@@ -113,6 +131,11 @@ let () =
         [ QCheck_alcotest.to_alcotest test_validity_of_first_pick_strat ] );
       ( "Random Strategy is valid",
         [ QCheck_alcotest.to_alcotest test_validity_of_random_strategy ] );
+      ( "Player number",
+        [
+          test_3_player_game;
+          QCheck_alcotest.to_alcotest test_only_2_and_4_players_are_allowed;
+        ] );
       ("create_player", [ test_create_player ]);
       ("add_player", [ test_add_players ]);
       ("Game integrity", [ QCheck_alcotest.to_alcotest can_play_two_games ]);
