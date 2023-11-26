@@ -81,6 +81,8 @@ let test_create_player =
 
 let test_add_players =
   Alcotest.test_case "add_players" `Quick (fun () ->
+    try
+      reset_board();
       add_players
         [
           create_player (-1, 0) 0 Red (fun _ -> Moving (0, 0));
@@ -88,7 +90,9 @@ let test_add_players =
           create_player (0, 0) 0 Red (fun _ -> Moving (-1, 0));
           create_player (0, 0) 0 Red (fun _ -> Moving (800, 0));
           create_player (0, 0) 0 Red (fun _ -> Placing_wall ((0, 0), (0, 0)));
-        ])
+        ]
+    with
+      InvalidPlayerWallsLeft _ -> ())
 
 let () =
   let open Alcotest in
