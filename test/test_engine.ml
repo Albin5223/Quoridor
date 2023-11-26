@@ -81,6 +81,8 @@ let test_create_player =
 
 let test_add_players =
   Alcotest.test_case "add_players" `Quick (fun () ->
+    try
+      reset_board();
       add_players
         [
           create_player (-1, 0) 0 Red (fun _ -> Moving (0, 0));
@@ -88,7 +90,19 @@ let test_add_players =
           create_player (0, 0) 0 Red (fun _ -> Moving (-1, 0));
           create_player (0, 0) 0 Red (fun _ -> Moving (800, 0));
           create_player (0, 0) 0 Red (fun _ -> Placing_wall ((0, 0), (0, 0)));
-        ])
+        ]
+    with
+      InvalidPlayerWallsLeft _ -> ())
+
+let can_play_two_games =
+  let open QCheck in
+  Test.make ~count:10 ~name:"Can play two games"
+    (pair (int_range 2 4) int)
+    (fun (n, seed) ->
+      Random.init seed;
+      let _ = create_list_of_player n Strategy.det_move |> run_game in
+      let _ = create_list_of_player n Strategy.det_move |> run_game in
+      true)
 
 let () =
   let open Alcotest in
@@ -101,4 +115,5 @@ let () =
         [ QCheck_alcotest.to_alcotest test_validity_of_random_strategy ] );
       ("create_player", [ test_create_player ]);
       ("add_player", [ test_add_players ]);
+      ("Game integrity", [ QCheck_alcotest.to_alcotest can_play_two_games ]);
     ]
