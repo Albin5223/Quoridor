@@ -83,35 +83,37 @@ let test_create_player =
 
 let test_add_players =
   Alcotest.test_case "add_players" `Quick (fun () ->
-    try
-      reset_board();
-      add_players
-        [
-          create_player (-1, 0) 0 Red (fun _ -> Moving (0, 0));
-          create_player (800, 0) 0 Red (fun _ -> Moving (0, 0));
-          create_player (0, 0) 0 Red (fun _ -> Moving (-1, 0));
-          create_player (0, 0) 0 Red (fun _ -> Moving (800, 0));
-          create_player (0, 0) 0 Red (fun _ -> Placing_wall ((0, 0), (0, 0)));
-        ]
-    with
-      InvalidPlayerWallsLeft _ -> ())
+      try
+        reset_board ();
+        add_players
+          [
+            create_player (-1, 0) 0 Red (fun _ -> Moving (0, 0));
+            create_player (800, 0) 0 Red (fun _ -> Moving (0, 0));
+            create_player (0, 0) 0 Red (fun _ -> Moving (-1, 0));
+            create_player (0, 0) 0 Red (fun _ -> Moving (800, 0));
+            create_player (0, 0) 0 Red (fun _ -> Placing_wall ((0, 0), (0, 0)));
+          ]
+      with InvalidPlayerWallsLeft _ -> ())
 
 let can_play_two_games =
   let open QCheck in
   Test.make ~count:10 ~name:"Can play two games"
-    (pair (int_range 2 4) int)
+    (pair (int_range 2 3) int)
     (fun (n, seed) ->
       Random.init seed;
+      let n = if n = 3 then 4 else 3 in
       let _ = create_list_of_player n Strategy.det_move |> run_game in
       let _ = create_list_of_player n Strategy.det_move |> run_game in
       true)
 
 let test_3_player_game =
   Alcotest.test_case "3 player game is not allowed" `Quick (fun () ->
-      reset_board ();
-      create_list_of_player 3 first_pick_strat |> add_players;
-      start_game ();
-      failwith "3 player game should not be allowed")
+      try
+        reset_board ();
+        create_list_of_player 3 first_pick_strat |> add_players;
+        start_game ();
+        failwith "3 player game should not be allowed"
+      with InvalidNumberPlayer _ -> ())
 
 let test_only_2_and_4_players_are_allowed =
   let open QCheck in
