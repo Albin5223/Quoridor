@@ -196,25 +196,25 @@ let number_of_walls_is_correct =
       (accepcts_only_n_walls ~nb_walls:5 ~nb_players:4);
   ]
 
-(** Moves a player starting from the top to the bottom of the board. It assumes that that player 
-    is the second one and that teh first one is on the left side of the board. There are only
-    two players in the game. *)
-let move_to_the_end_strat _ =
-  List.init (board_size - 1) (fun i ->
-      if i mod 4 = 0 then Moving (2, board_size / 2)
-      else if i mod 2 = 0 then Moving (0, board_size / 2)
-      else Moving (board_size / 2, i + 1))
-  |> List.iter (fun pos -> do_move pos);
-  Moving (2, board_size / 2)
-
-let test_player_cannot_win_on_first_turn strat1 strat2 =
+let test_player_cannot_win_on_first_turn =
+  (* Moves a player starting from the top to the bottom of the board. It assumes that that player
+     is the second one and that the first one is on the left side of the board. There are only
+     two players in the game. *)
+  let move_to_the_end_strat _ =
+    List.init (board_size - 1) (fun i ->
+        if i mod 4 = 0 then Moving (2, board_size / 2)
+        else if i mod 2 = 0 then Moving (0, board_size / 2)
+        else Moving (board_size / 2, i + 1))
+    |> List.iter do_move;
+    Moving (2, board_size / 2)
+  in
   Alcotest.test_case "play" `Quick (fun () ->
       Alcotest.check_raises "Player cannot win on first turn"
         (NoWinningPlayer "No player has reached their target zone") (fun () ->
           reset_board ();
           [
-            (Red, (0, board_size / 2), strat1);
-            (Blue, (board_size / 2, 0), strat2);
+            (Red, (0, board_size / 2), move_to_the_end_strat);
+            (Blue, (board_size / 2, 0), first_pick_strat);
           ]
           |> init_game;
           Quoridor.Engine.play ();
@@ -244,7 +244,6 @@ let () =
       ( "Game integrity",
         [
           QCheck_alcotest.to_alcotest can_play_two_games;
-          test_player_cannot_win_on_first_turn move_to_the_end_strat
-            first_pick_strat;
+          test_player_cannot_win_on_first_turn;
         ] );
     ]
