@@ -21,7 +21,7 @@ exception InvalidPositionPair of position * position * string
 exception InvalidWallPlacement of position * position * string
 exception InvalidNumberPlayer of int * string
 exception InvalidPlayerColor of color * string
-exception InvalidPlayerWallsLeft of int * string
+exception InvalidPlayerWallsLeft of string
 exception NoWinningPlayer of string
 exception NoPlayersInGame
 exception NoMovePossible of string

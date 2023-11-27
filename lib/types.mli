@@ -49,7 +49,7 @@ exception InvalidNumberPlayer of int * string
 exception InvalidPlayerColor of color * string
 (** Raised when an invalid color is assigned to a player. *)
 
-exception InvalidPlayerWallsLeft of int * string
+exception InvalidPlayerWallsLeft of string
 
 exception NoWinningPlayer of string
 (** Raised when there is no winning player in a game scenario where one is expected. *)
