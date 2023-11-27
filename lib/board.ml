@@ -2,14 +2,14 @@ open Types
 
 type cell_content = Empty | Wall | Player of player
 type board = cell_content array array
-type state = { mutable players : player list; mutable status : game_status }
+type state = { mutable players : player list; mutable status : game_status; players_added : bool;}
 
 let board_size = 17
 let game_board = Array.make_matrix board_size board_size Empty
 let move_vectors = [ (-1, 0); (1, 0); (0, -1); (0, 1) ]
 
 (* Storage of the player list to avoid browsing the entire board, as well as the game status. *)
-let game_state = { players = []; status = WaitingToStart }
+let game_state = { players = []; status = WaitingToStart ; players_added = false}
 
 let validate_game_in_progress_status () =
   match game_state.status with
@@ -24,19 +24,15 @@ let validate_game_waiting_status () =
   | InProgress -> raise (InvalidGameState "Game has already started")
 
 let start_game () =
-  Format.printf "start game";
   let num_players = List.length game_state.players in
   if game_state.status = WaitingToStart then
-<<<<<<< HEAD
-    if num_players = 2 || num_players = 4 then game_state.status <- InProgress
-=======
+
     if num_players = 2 || num_players = 4 then 
       if not (List.for_all (fun p -> p.walls_left = 20 / num_players) game_state.players) then
         raise
           (InvalidPlayerWallsLeft
              ("The number of walls for each player is not allowed"))
       else game_state.status <- InProgress
->>>>>>> iglesias/projet-ocaml-2023---quoridor-bug-wrong-number-of-wall-4-players
     else
       raise
         (InvalidNumberPlayer
@@ -323,7 +319,6 @@ let is_border_position pos =
 
  
 let add_player_to_board player =
-  Format.printf "add player";
   validate_game_waiting_status ();
   let current_players = game_state.players in
   let nbPlayers = List.length current_players in
@@ -358,7 +353,11 @@ let add_player_to_board player =
   game_state.players <- game_state.players @ [ player ]
 
 
-let add_all_players_to_board players =
+let add_all_players_to_board players = 
+  if game_state.players_added then
+    raise
+      (InvalidNumberPlayer
+         (List.length players, "Cannot add more players to the board"));
   List.iter (fun p -> add_player_to_board p) players
 
 
