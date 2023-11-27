@@ -2,7 +2,7 @@ open Quoridor.Types
 open Quoridor.Board
 open Quoridor.Engine
 
-let create_list_of_player nb_players strat =
+let create_list_of_player nb_players walls_left strat =
   let colors = [ Red; Blue; Green; Yellow ] in
   let positions =
     [
@@ -19,7 +19,7 @@ let create_list_of_player nb_players strat =
            "Number of players must be between 2 and 4 to start the game" ))
   else
     List.init nb_players (fun i ->
-        create_player (List.nth positions i) 10 (List.nth colors i) strat)
+        create_player (List.nth positions i) walls_left (List.nth colors i) strat)
 
 module Strategy = struct
   let random_move pos =

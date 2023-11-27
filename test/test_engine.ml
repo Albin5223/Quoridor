@@ -13,7 +13,7 @@ let init_game player_info =
            strategy = strat;
            walls_left = 10;
          })
-  |> List.iter add_player_to_board;
+  |> add_all_players_to_board;
   start_game ()
 
 let get_all_walls () =
@@ -50,24 +50,57 @@ let test_walls_cannot_be_removed =
 
 let first_pick_strat pos = Moving (list_of_moves pos |> List.hd)
 
-let test_validity_of_first_pick_strat =
+let test_validity_of_first_pick_strat_with_2_players =
   let open QCheck in
+<<<<<<< HEAD
   Test.make ~count:100 ~name:"test_validity_of_first_pick_strat" (int_range 2 3)
     (fun n ->
       reset_board ();
       let n = if n = 3 then 4 else 2 in
       let _ = create_list_of_player n first_pick_strat |> run_game in
+=======
+  Test.make ~count:100 ~name:"test_validity_of_first_pick_strat" (int_range 2 2)
+    (fun n ->
+      reset_board ();
+      let _ = create_list_of_player n 10 first_pick_strat |> run_game in
+>>>>>>> iglesias/projet-ocaml-2023---quoridor-bug-wrong-number-of-wall-4-players
       true)
 
-let test_validity_of_random_strategy =
+let test_validity_of_first_pick_strat_with_4_players =
+  let open QCheck in
+  Test.make ~count:100 ~name:"test_validity_of_first_pick_strat" (int_range 4 4)
+    (fun n ->
+      reset_board ();
+      let _ = create_list_of_player n 5 first_pick_strat |> run_game in
+      true)
+
+let test_validity_of_random_strategy_with_2_players =
   let open QCheck in
   Test.make ~count:100 ~name:"Radom strategy is valid"
+<<<<<<< HEAD
     (pair (int_range 2 3) int)
     (fun (n, seed) ->
       Random.init seed;
       reset_board ();
       let n = if n = 3 then 4 else 2 in
       let _ = create_list_of_player n Strategy.det_move |> run_game in
+=======
+    (pair (int_range 2 2) int)
+    (fun (n, seed) ->
+      Random.init seed;
+      reset_board ();
+      let _ = create_list_of_player n 10 Strategy.det_move |> run_game in
+      true)
+
+let test_validity_of_random_strategy_with_4_players =
+  let open QCheck in
+  Test.make ~count:100 ~name:"Radom strategy is valid"
+    (pair (int_range 4 4) int)
+    (fun (n, seed) ->
+      Random.init seed;
+      reset_board ();
+      let _ = create_list_of_player n 5 Strategy.det_move |> run_game in
+>>>>>>> iglesias/projet-ocaml-2023---quoridor-bug-wrong-number-of-wall-4-players
       true)
 
 let test_create_player =
@@ -98,6 +131,7 @@ let test_add_players =
 let can_play_two_games =
   let open QCheck in
   Test.make ~count:10 ~name:"Can play two games"
+<<<<<<< HEAD
     (pair (int_range 2 3) int)
     (fun (n, seed) ->
       Random.init seed;
@@ -125,12 +159,71 @@ let test_only_2_and_4_players_are_allowed =
         start_game ();
         if n = 2 || n = 4 then true else false
       with InvalidNumberPlayer _ -> if n = 2 || n = 4 then false else true)
+=======
+    (pair (int_range 2 2) int)
+    (fun (n, seed) ->
+      Random.init seed;
+      let _ = create_list_of_player n 10 Strategy.det_move |> run_game in
+      let _ = create_list_of_player n 10 Strategy.det_move |> run_game in
+      true)
+
+let accepcts_only_n_walls ~nb_walls ~nb_players =
+  QCheck.Test.make ~count:1000
+    ~name:
+      (Printf.sprintf "Accepts only %d walls | %d players" nb_walls nb_players)
+    QCheck.(int_range 0 100)
+    (fun walls ->
+      reset_board ();
+      let players =
+        create_list_of_player nb_players nb_walls (fun _ -> Moving (0, 0))
+        |> List.map (fun player -> { player with walls_left = walls })
+      in
+      try
+        add_players players;
+        if walls = nb_walls then true else false
+      with InvalidPlayerWallsLeft _ -> true)
+
+let number_of_walls_is_correct =
+  [
+    (* Just a dramatic example, QCheck is better for this (see other test cases) *)
+    Alcotest.test_case "Can't have 100" `Quick (fun () ->
+        reset_board ();
+        let players =
+          create_list_of_player 2 10 (fun _ -> Moving (0, 0))
+          |> List.map (fun player -> { player with walls_left = 100 })
+        in
+
+        try
+          add_players players;
+          failwith "Players can't have 100 walls"
+        with InvalidPlayerWallsLeft _ -> ());
+    Alcotest.test_case "Accepts 10 walls | 2 players" `Quick (fun () ->
+        reset_board ();
+        let players =
+          create_list_of_player 2 10(fun _ -> Moving (0, 0))
+          |> List.map (fun player -> { player with walls_left = 10 })
+        in
+        add_players players);
+    Alcotest.test_case "Accepts 5 walls | 4 players" `Quick (fun () ->
+        reset_board ();
+        let players =
+          create_list_of_player 4 5(fun _ -> Moving (0, 0))
+          |> List.map (fun player -> { player with walls_left = 5 })
+        in
+        add_players players);
+    QCheck_alcotest.to_alcotest
+      (accepcts_only_n_walls ~nb_walls:10 ~nb_players:2);
+    QCheck_alcotest.to_alcotest
+      (accepcts_only_n_walls ~nb_walls:5 ~nb_players:4);
+  ]
+>>>>>>> iglesias/projet-ocaml-2023---quoridor-bug-wrong-number-of-wall-4-players
 
 let () =
   let open Alcotest in
   run "Engine"
     [
       ("Walls cannot be removed", [ test_walls_cannot_be_removed ]);
+<<<<<<< HEAD
       ( "First pick strategy is valid",
         [ QCheck_alcotest.to_alcotest test_validity_of_first_pick_strat ] );
       ( "Random Strategy is valid",
@@ -140,7 +233,17 @@ let () =
           test_3_player_game;
           QCheck_alcotest.to_alcotest test_only_2_and_4_players_are_allowed;
         ] );
+=======
+      ( "First pick strategy is valid with 2 players",
+        [ QCheck_alcotest.to_alcotest test_validity_of_first_pick_strat_with_2_players ] );
+      ( "First pick strategy is valid with 4 players",
+        [ QCheck_alcotest.to_alcotest test_validity_of_first_pick_strat_with_4_players ] );
+      ( "Random Strategy is valid with 4 players",
+        [ QCheck_alcotest.to_alcotest test_validity_of_random_strategy_with_4_players ] );
+      ( "Random Strategy is valid with 2 players",
+        [ QCheck_alcotest.to_alcotest test_validity_of_random_strategy_with_2_players ] );
+>>>>>>> iglesias/projet-ocaml-2023---quoridor-bug-wrong-number-of-wall-4-players
       ("create_player", [ test_create_player ]);
-      ("add_player", [ test_add_players ]);
+      ("add_player", [ test_add_players ] @ number_of_walls_is_correct);
       ("Game integrity", [ QCheck_alcotest.to_alcotest can_play_two_games ]);
     ]

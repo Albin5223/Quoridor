@@ -24,16 +24,26 @@ let validate_game_waiting_status () =
   | InProgress -> raise (InvalidGameState "Game has already started")
 
 let start_game () =
+  Format.printf "start game";
   let num_players = List.length game_state.players in
   if game_state.status = WaitingToStart then
+<<<<<<< HEAD
     if num_players = 2 || num_players = 4 then game_state.status <- InProgress
+=======
+    if num_players = 2 || num_players = 4 then 
+      if not (List.for_all (fun p -> p.walls_left = 20 / num_players) game_state.players) then
+        raise
+          (InvalidPlayerWallsLeft
+             ("The number of walls for each player is not allowed"))
+      else game_state.status <- InProgress
+>>>>>>> iglesias/projet-ocaml-2023---quoridor-bug-wrong-number-of-wall-4-players
     else
       raise
         (InvalidNumberPlayer
            ( num_players,
              "Number of players must be 2 or 4 to start the game" ))
   else raise (InvalidGameState "Game cannot be started")
-
+  
 let stop_game winner =
   validate_game_in_progress_status ();
   game_state.status <- Finished winner
@@ -310,7 +320,10 @@ let is_border_position pos =
   (x = middle && (y = 0 || y = board_size - 1))
   || (y = middle && (x = 0 || x = board_size - 1))
 
+
+ 
 let add_player_to_board player =
+  Format.printf "add player";
   validate_game_waiting_status ();
   let current_players = game_state.players in
   let nbPlayers = List.length current_players in
@@ -330,11 +343,6 @@ let add_player_to_board player =
       (InvalidPlayerColor
          (player.color, "A player with the same color already exists"));
 
-  if player.walls_left <> 10 then
-    raise
-      (InvalidPlayerWallsLeft
-         (player.walls_left, "A player must have 10 walls to start the game"));
-
   let x, y = player.current_position in
   if not (is_border_position player.current_position) then
     raise
@@ -348,6 +356,11 @@ let add_player_to_board player =
   (* Adding the player to the list and to the game_board *)
   game_board.(y).(x) <- Player player;
   game_state.players <- game_state.players @ [ player ]
+
+
+let add_all_players_to_board players =
+  List.iter (fun p -> add_player_to_board p) players
+
 
 let do_move (move : Types.move) =
   match move with
