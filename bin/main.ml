@@ -41,7 +41,7 @@ let det_move pos =
 
 (** Creates and returns the list of players with their position, color and our strategy 
     @param nb_players The number of players to add to the game
-    @raise InvalidNumberPlayer if the number of players is not between 2 and 4.
+    @raise InvalidNumberPlayer if the number of players is not 2 or 4.
     @return the list of players to add to the game
     *)
 let create_lst_of_player nb_players =
@@ -54,11 +54,11 @@ let create_lst_of_player nb_players =
       (board_size - 1, board_size / 2);
     ]
   in
-  if nb_players < 2 || nb_players > 4 then
+  if nb_players <> 2 && nb_players <> 4 then
     raise
       (InvalidNumberPlayer
          ( nb_players,
-           "Number of players must be between 2 and 4 to start the game" ))
+           "Number of players must be 2 or 4 to start the game" ))
   else
     List.init nb_players (fun i ->
         create_player (List.nth positions i) 10 (List.nth colors i) det_move)

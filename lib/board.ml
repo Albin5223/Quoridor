@@ -26,12 +26,12 @@ let validate_game_waiting_status () =
 let start_game () =
   let num_players = List.length game_state.players in
   if game_state.status = WaitingToStart then
-    if num_players >= 2 && num_players <= 4 then game_state.status <- InProgress
+    if num_players = 2 || num_players = 4 then game_state.status <- InProgress
     else
       raise
         (InvalidNumberPlayer
            ( num_players,
-             "Number of players must be between 2 and 4 to start the game" ))
+             "Number of players must be 2 or 4 to start the game" ))
   else raise (InvalidGameState "Game cannot be started")
 
 let stop_game winner =
