@@ -76,7 +76,7 @@ val list_of_moves : Types.position -> Types.position list
 val validate_wall_placement :
   Types.player -> Types.position -> Types.position -> unit
 (** Validates the placement of a wall by a player.
-    @param wallsLeft The number of walls the player has left.
+    @param player The player placing the wall.
     @param pos1 The first position of the wall.
     @param pos2 The second position of the wall.
     @raise InvalidWallPlacement if the player has no walls left or the wall placement is invalid.
@@ -108,4 +108,4 @@ val print_board : unit -> unit
 (** Prints the current state of the game board. *)
 
 val color_to_string : Types.player -> string
-(**Returns the color of a player as a string.*)
+(** Returns the color of a player as a string. *)
