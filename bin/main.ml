@@ -44,7 +44,7 @@ let det_move pos =
     @raise InvalidNumberPlayer if the number of players is not between 2 and 4.
     @return the list of players to add to the game
     *)
-let create_lst_of_player nb_players =
+let create_lst_of_player nb_players walls_left =
   let colors = [ Red; Blue; Green; Yellow ] in
   let positions =
     [
@@ -61,9 +61,9 @@ let create_lst_of_player nb_players =
            "Number of players must be between 2 and 4 to start the game" ))
   else
     List.init nb_players (fun i ->
-        create_player (List.nth positions i) 10 (List.nth colors i) det_move)
+        create_player (List.nth positions i) walls_left (List.nth colors i) det_move)
 
 let () =
-  let lst_player = create_lst_of_player 4 in
+  let lst_player = create_lst_of_player 4 5 in
   let _ = run_game lst_player in
   ()

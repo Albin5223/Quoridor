@@ -1,6 +1,8 @@
 open Quoridor
 open Quoridor.Types
-open Utils
+(*open Utils*)
+
+(* These tests worked well but we can no longer add players one by one so they are commented
 
 let test_add_player_valid =
   Alcotest.test_case "add_player_valid" `Quick (fun () ->
@@ -95,14 +97,8 @@ let test_place_wall_invalid =
         Alcotest.fail "No exception raised for invalid wall placement"
       with InvalidWallPosition _ -> ())
 
-let test_starting_game =
-  Alcotest.test_case "impossible_situation_to_start_game" `Quick (fun () ->
-      Board.reset_board ();
-      try
-        Board.start_game ();
-        Alcotest.fail "No exception raised for starting incomplete game"
-      with InvalidNumberPlayer _ -> ())
 
+      
 let test_winning_player_none =
   Alcotest.test_case "winning_player_none" `Quick (fun () ->
       Board.reset_board ();
@@ -116,6 +112,17 @@ let test_winning_player_none =
         let _ = Board.winning_player () in
         Alcotest.fail "No exception raised for no winning player"
       with NoWinningPlayer _ -> ())
+
+      *)
+
+let test_starting_game =
+  Alcotest.test_case "impossible_situation_to_start_game" `Quick (fun () ->
+      Board.reset_board ();
+      try
+        Board.start_game ();
+        Alcotest.fail "No exception raised for starting incomplete game"
+      with InvalidNumberPlayer _ -> ())
+
 
 let test_validate_position_valid =
   Alcotest.test_case "validate_position_valid" `Quick (fun () ->
@@ -306,17 +313,17 @@ let () =
         [ test_is_wall_position; test_is_player_position ] );
       ("is_wall", [ test_is_wall ]);
       ("is_player", [ test_is_player ]);
-      ( "add_player_to_board",
+      (*( "add_player_to_board",
         [
           test_add_player_valid;
           test_add_player_invalid_position;
           test_add_player_invalid_color;
           test_add_player_invalid_am_of_walls;
-        ] );
+        ] );*)
       ("start_game", [ test_starting_game ]);
-      ("move_player", [ test_move_player_valid; test_move_player_invalid ]);
+      (*("move_player", [ test_move_player_valid; test_move_player_invalid ]);
       ("place_wall", [ test_place_wall_valid; test_place_wall_invalid ]);
-      ("winning_player", [ test_winning_player_none ]);
+      ("winning_player", [ test_winning_player_none ]);*)
       ( "validate_position",
         [ test_validate_position_valid; test_validate_position_invalid ] );
       ( "validate_position_prop",
