@@ -22,6 +22,28 @@ let test_add_player_invalid_position =
         Alcotest.fail "No exception raised for invalid position"
       with InvalidPlayerPosition _ -> ())
 
+let add_player_on_invalid_initial_position =
+  let open Quoridor.Board in
+  let valid_positions =
+    [
+      (0, board_size / 2);
+      (board_size - 1, board_size / 2);
+      (board_size / 2, 0);
+      (board_size / 2, board_size - 1);
+    ]
+  in
+  let open QCheck in
+  Test.make ~name:"add_player_on_invalid_initial_positions" ~count:1000
+    (pair (int_range 0 16) (int_range 0 16))
+    (fun (x, y) ->
+      assume (not (List.mem (x, y) valid_positions));
+      Board.reset_board ();
+      let player = Engine.create_player (x, y) 10 Red Strategy.det_move in
+      try
+        Board.add_player_to_board player;
+        false
+      with InvalidPlayerPosition _ -> true)
+
 let test_add_player_invalid_color =
   Alcotest.test_case "invalid_color" `Quick (fun () ->
       Board.reset_board ();
@@ -310,6 +332,7 @@ let () =
         [
           test_add_player_valid;
           test_add_player_invalid_position;
+          QCheck_alcotest.to_alcotest add_player_on_invalid_initial_position;
           test_add_player_invalid_color;
           test_add_player_invalid_am_of_walls;
         ] );
