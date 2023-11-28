@@ -26,11 +26,8 @@ let add_players player_lst =
        
     add_all_players_to_board player_lst
 
-let play () =
-  let strat = (current_player ()).strategy in
-  let pos = (current_player ()).current_position in
-  let move = strat pos in
-  Board.do_move move
+
+    
 
 let run_game player_lst =
   Random.self_init ();
@@ -41,7 +38,7 @@ let run_game player_lst =
       let winner = Board.winning_player () in
       Format.printf "Player %s won\n" (color_to_string winner)
     with NoWinningPlayer _ ->
-      play ();
+      Board.play ();
       aux ()
   in
   add_players player_lst;

@@ -35,9 +35,9 @@ let test_walls_cannot_be_removed =
     players wall_placer reseter_strat |> init_game;
     (* This should be the actual test :
        `first_pick_strategy pos`
-       but since the current player has been updated, `pos` means nothing, as it is
-       the position of the player who just played. So I joust hardcoded a position that
-       t should work is walls are immutable but current player changes thanks to `reset_board`*)
+       but since the current player has been updated thanks to `reset_board`, `pos` means nothing,
+       as it is the position of the player who just played. So I just hardcoded a position that
+       should work. *)
     Moving (2, board_size / 2)
   in
 
@@ -52,7 +52,6 @@ let first_pick_strat pos = Moving (list_of_moves pos |> List.hd)
 
 let test_validity_of_first_pick_strat_with_2_players =
   let open QCheck in
-
   Test.make ~count:100 ~name:"test_validity_of_first_pick_strat" (int_range 2 2)
     (fun n ->
       reset_board ();
@@ -70,7 +69,6 @@ let test_validity_of_first_pick_strat_with_4_players =
 let test_validity_of_random_strategy_with_2_players =
   let open QCheck in
   Test.make ~count:100 ~name:"Radom strategy is valid"
-
     (pair (int_range 2 2) int)
     (fun (n, seed) ->
       Random.init seed;
@@ -111,17 +109,17 @@ let test_add_players =
             create_player (0, 0) 0 Red (fun _ -> Moving (800, 0));
             create_player (0, 0) 0 Red (fun _ -> Placing_wall ((0, 0), (0, 0)));
           ]
-      with InvalidPlayerWallsLeft _ | InvalidNumberPlayer _-> ())
+      with InvalidPlayerWallsLeft _ | InvalidNumberPlayer _ -> ())
 
 let can_play_two_games =
   let open QCheck in
   Test.make ~count:10 ~name:"Can play two games"
-  (pair (int_range 2 2) int)
-  (fun (n, seed) ->
-    Random.init seed;
-    let _ = create_list_of_player n 10 Strategy.det_move |> run_game in
-    let _ = create_list_of_player n 10 Strategy.det_move |> run_game in
-    true)
+    (pair (int_range 2 2) int)
+    (fun (n, seed) ->
+      Random.init seed;
+      let _ = create_list_of_player n 10 Strategy.det_move |> run_game in
+      let _ = create_list_of_player n 10 Strategy.det_move |> run_game in
+      true)
 
 let test_3_player_game =
   Alcotest.test_case "3 player game is not allowed" `Quick (fun () ->
@@ -138,13 +136,11 @@ let test_only_2_and_4_players_are_allowed =
     (fun n ->
       try
         reset_board ();
-        if n = 2  then
-          create_list_of_player n 10 first_pick_strat |> add_players
+        if n = 2 then create_list_of_player n 10 first_pick_strat |> add_players
         else create_list_of_player n 5 first_pick_strat |> add_players;
         start_game ();
         if n = 2 || n = 4 then true else false
       with InvalidNumberPlayer _ -> if n = 2 || n = 4 then false else true)
-
 
 let accepcts_only_n_walls ~nb_walls ~nb_players =
   QCheck.Test.make ~count:1000
@@ -179,14 +175,14 @@ let number_of_walls_is_correct =
     Alcotest.test_case "Accepts 10 walls | 2 players" `Quick (fun () ->
         reset_board ();
         let players =
-          create_list_of_player 2 10(fun _ -> Moving (0, 0))
+          create_list_of_player 2 10 (fun _ -> Moving (0, 0))
           |> List.map (fun player -> { player with walls_left = 10 })
         in
         add_players players);
     Alcotest.test_case "Accepts 5 walls | 4 players" `Quick (fun () ->
         reset_board ();
         let players =
-          create_list_of_player 4 5(fun _ -> Moving (0, 0))
+          create_list_of_player 4 5 (fun _ -> Moving (0, 0))
           |> List.map (fun player -> { player with walls_left = 5 })
         in
         add_players players);
@@ -195,6 +191,33 @@ let number_of_walls_is_correct =
     QCheck_alcotest.to_alcotest
       (accepcts_only_n_walls ~nb_walls:5 ~nb_players:4);
   ]
+
+(* This test is no longer usable because the do-move function has been hidden
+
+let test_player_cannot_win_on_first_turn =
+  (* Moves a player starting from the top to the bottom of the board. It assumes that that player
+     is the second one and that the first one is on the left side of the board. There are only
+     two players in the game. *)
+  let move_to_the_end_strat _ =
+    List.init (board_size - 1) (fun i ->
+        if i mod 4 = 0 then Moving (2, board_size / 2)
+        else if i mod 2 = 0 then Moving (0, board_size / 2)
+        else Moving (board_size / 2, i + 1))
+    |> List.iter do_move;
+    Moving (2, board_size / 2)
+  in
+  Alcotest.test_case "Player cannot win on first turn" `Quick (fun () ->
+          reset_board ();
+          [
+            (Red, (0, board_size / 2), move_to_the_end_strat);
+            (Blue, (board_size / 2, 0), first_pick_strat);
+          ]
+          |> init_game;
+          try
+            Quoridor.Board.play ();
+            let _ = winning_player () in
+            failwith "Player can win on first turn"
+          with NoWinningPlayer _ | InvalidMove _ -> ())*)
 
 let () =
   let open Alcotest in
@@ -207,14 +230,30 @@ let () =
           QCheck_alcotest.to_alcotest test_only_2_and_4_players_are_allowed;
         ] );
       ( "First pick strategy is valid with 2 players",
-        [ QCheck_alcotest.to_alcotest test_validity_of_first_pick_strat_with_2_players ] );
+        [
+          QCheck_alcotest.to_alcotest
+            test_validity_of_first_pick_strat_with_2_players;
+        ] );
       ( "First pick strategy is valid with 4 players",
-        [ QCheck_alcotest.to_alcotest test_validity_of_first_pick_strat_with_4_players ] );
+        [
+          QCheck_alcotest.to_alcotest
+            test_validity_of_first_pick_strat_with_4_players;
+        ] );
       ( "Random Strategy is valid with 4 players",
-        [ QCheck_alcotest.to_alcotest test_validity_of_random_strategy_with_4_players ] );
+        [
+          QCheck_alcotest.to_alcotest
+            test_validity_of_random_strategy_with_4_players;
+        ] );
       ( "Random Strategy is valid with 2 players",
-        [ QCheck_alcotest.to_alcotest test_validity_of_random_strategy_with_2_players ] );
+        [
+          QCheck_alcotest.to_alcotest
+            test_validity_of_random_strategy_with_2_players;
+        ] );
       ("create_player", [ test_create_player ]);
       ("add_player", [ test_add_players ] @ number_of_walls_is_correct);
-      ("Game integrity", [ QCheck_alcotest.to_alcotest can_play_two_games ]);
+      ( "Game integrity",
+        [
+          QCheck_alcotest.to_alcotest can_play_two_games;
+          (*test_player_cannot_win_on_first_turn;*)
+        ] );
     ]

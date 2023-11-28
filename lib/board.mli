@@ -86,10 +86,8 @@ val validate_wall_placement :
 
 val add_all_players_to_board : Types.player list -> unit
 
-val do_move : Types.move -> unit
-(** Translates the given movement of the player on the board (he places a wall or moves)
-    @param move the movement of the player who must play.
-    *)
+val play : unit -> unit
+(** Makes a player play thanks to his strategy (places a wall or moves the player).*)
 
 val winning_player : unit -> Types.player
 (** Returns the player who has reached their target zone.

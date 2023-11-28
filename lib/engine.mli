@@ -12,8 +12,6 @@ val add_players : Types.player list -> unit
     @param player_lst The list of players in the game.
 *)
 
-val play : unit -> unit
-(** Makes a player play thanks to his strategy (places a wall or moves the player).*)
 
 val run_game : Types.player list -> unit
 (** Starts and manages the game loop until a player wins or the game ends.
