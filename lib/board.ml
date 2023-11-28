@@ -363,8 +363,16 @@ let add_all_players_to_board players =
 
 let do_move (move : Types.move) =
   match move with
-  | Placing_wall (pos1, pos2) -> place_wall pos1 pos2
-  | Moving pos -> move_player pos
+    | Placing_wall (pos1, pos2) -> place_wall pos1 pos2
+    | Moving pos -> move_player pos
+
+let play () =
+  let strat = (current_player ()).strategy in
+  let pos = (current_player ()).current_position in
+  let move = strat pos in
+    do_move move
+
+
 
 let winning_player () =
   (* Function to check if a player has reached their target zone *)
