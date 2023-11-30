@@ -176,30 +176,29 @@ let number_of_walls_is_correct =
 
 (* This test is no longer usable because the do-move function has been hidden
 
-   let test_player_cannot_win_on_first_turn =
-     (* Moves a player starting from the top to the bottom of the board. It assumes that that player
-        is the second one and that the first one is on the left side of the board. There are only
-        two players in the game. *)
-     let move_to_the_end_strat _ =
-       List.init (board_size - 1) (fun i ->
-           if i mod 4 = 0 then Moving (2, board_size / 2)
-           else if i mod 2 = 0 then Moving (0, board_size / 2)
-           else Moving (board_size / 2, i + 1))
-       |> List.iter do_move;
-       Moving (2, board_size / 2)
-     in
-     Alcotest.test_case "Player cannot win on first turn" `Quick (fun () ->
-
-             [
-               (Red, (0, board_size / 2), move_to_the_end_strat);
-               (Blue, (board_size / 2, 0), first_pick_strat);
-             ]
-             |> init_game;
-             try
-               Quoridor.Board.play ();
-               let _ = winning_player () in
-               failwith "Player can win on first turn"
-             with NoWinningPlayer _ | InvalidMove _ -> ())*)
+      let test_player_cannot_win_on_first_turn =
+        (* Moves a player starting from the top to the bottom of the board. It assumes that that player
+           is the second one and that the first one is on the left side of the board. There are only
+           two players in the game. *)
+        let move_to_the_end_strat _ =
+          List.init (board_size - 1) (fun i ->
+              if i mod 4 = 0 then Moving (2, board_size / 2)
+              else if i mod 2 = 0 then Moving (0, board_size / 2)
+              else Moving (board_size / 2, i + 1))
+          |> List.iter do_move;
+          Moving (2, board_size / 2)
+        in
+        Alcotest.test_case "Player cannot win on first turn" `Quick (fun () ->
+                [
+                  (Red, (0, board_size / 2), move_to_the_end_strat);
+                  (Blue, (board_size / 2, 0), first_pick_strat);
+                ]
+                |> init_game;
+                try
+                  Quoridor.Board.play ();
+                  let _ = winning_player () in
+                  failwith "Player can win on first turn"
+                with NoWinningPlayer _ | InvalidMove _ -> ())*)
 
 let () =
   let open Alcotest in
