@@ -23,7 +23,17 @@ let validate_game_waiting_status () =
   | Finished _ -> raise (InvalidGameState "Game has already finished")
   | InProgress -> raise (InvalidGameState "Game has already started")
 
-let start_game () =
+
+let reset_board () =
+  for y = 0 to board_size - 1 do
+    for x = 0 to board_size - 1 do
+      game_board.(y).(x) <- Empty
+    done
+  done;
+  game_state.players <- [];
+  game_state.status <- WaitingToStart
+
+let start_game () = 
   let num_players = List.length game_state.players in
   if game_state.status = WaitingToStart then
 
@@ -38,7 +48,8 @@ let start_game () =
         (InvalidNumberPlayer
            ( num_players,
              "Number of players must be 2 or 4 to start the game" ))
-  else raise (InvalidGameState "Game cannot be started")
+  else
+    raise (InvalidGameState "Game cannot be started")
   
 let stop_game winner =
   validate_game_in_progress_status ();
@@ -353,7 +364,9 @@ let add_player_to_board player =
   game_state.players <- game_state.players @ [ player ]
 
 
+
 let add_all_players_to_board players = 
+  reset_board ();
   if game_state.players_added then
     raise
       (InvalidNumberPlayer
@@ -405,15 +418,7 @@ let winning_player () =
   with Not_found ->
     raise (NoWinningPlayer "No player has reached their target zone")
 
-let reset_board () =
-  for y = 0 to board_size - 1 do
-    for x = 0 to board_size - 1 do
-      game_board.(y).(x) <- Empty
-    done
-  done;
 
-  game_state.players <- [];
-  game_state.status <- WaitingToStart
 
 let print_player p =
   match p.color with

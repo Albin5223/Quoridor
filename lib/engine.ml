@@ -31,7 +31,6 @@ let add_players player_lst =
 
 let run_game player_lst =
   Random.self_init ();
-  reset_board ();
   let rec aux () =
     Board.print_board ();
     try

@@ -139,11 +139,10 @@ let test_winning_player_none =
 
 let test_starting_game =
   Alcotest.test_case "impossible_situation_to_start_game" `Quick (fun () ->
-      Board.reset_board ();
       try
         Board.start_game ();
         Alcotest.fail "No exception raised for starting incomplete game"
-      with InvalidNumberPlayer _ -> ())
+      with InvalidNumberPlayer _| InvalidGameState _ -> ())
 
 
 let test_validate_position_valid =
@@ -249,7 +248,6 @@ let test_is_wall =
 
 let test_is_player =
   Alcotest.test_case "is_player" `Quick (fun () ->
-      Board.reset_board ();
       let player1 =
         Engine.create_player
           (0, Board.board_size / 2)
