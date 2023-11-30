@@ -30,12 +30,9 @@ let test_walls_cannot_be_removed =
     let wall_pos2 = (1, 1) in
     Placing_wall (wall_pos1, wall_pos2)
   in
-  let first_pick_strategy  _ =
-    Moving (2, board_size / 2)
-  in
+  let first_pick_strategy _ = Moving (2, board_size / 2) in
 
   Alcotest.test_case "Walls cannot be removed" `Quick (fun () ->
-
       players first_pick_strategy wall_placer |> init_game;
       play ();
       play ();
@@ -48,7 +45,6 @@ let test_validity_of_first_pick_strat_with_2_players =
   let open QCheck in
   Test.make ~count:100 ~name:"test_validity_of_first_pick_strat" (int_range 2 2)
     (fun n ->
-
       let _ = create_list_of_player n 10 first_pick_strat |> run_game in
       true)
 
@@ -56,7 +52,6 @@ let test_validity_of_first_pick_strat_with_4_players =
   let open QCheck in
   Test.make ~count:100 ~name:"test_validity_of_first_pick_strat" (int_range 4 4)
     (fun n ->
-
       let _ = create_list_of_player n 5 first_pick_strat |> run_game in
       true)
 
@@ -94,7 +89,6 @@ let test_create_player =
 let test_add_players =
   Alcotest.test_case "add_players" `Quick (fun () ->
       try
-  
         add_players
           [
             create_player (-1, 0) 0 Red (fun _ -> Moving (0, 0));
@@ -118,7 +112,6 @@ let can_play_two_games =
 let test_3_player_game =
   Alcotest.test_case "3 player game is not allowed" `Quick (fun () ->
       try
-  
         create_list_of_player 3 5 first_pick_strat |> add_players;
         start_game ();
         failwith "3 player game should not be allowed"
@@ -129,7 +122,6 @@ let test_only_2_and_4_players_are_allowed =
   Test.make ~count:100 ~name:"Only 2 and 4 players are allowed" (int_range 1 10)
     (fun n ->
       try
-  
         if n = 2 then create_list_of_player n 10 first_pick_strat |> add_players
         else create_list_of_player n 5 first_pick_strat |> add_players;
         start_game ();
@@ -142,7 +134,6 @@ let accepcts_only_n_walls ~nb_walls ~nb_players =
       (Printf.sprintf "Accepts only %d walls | %d players" nb_walls nb_players)
     QCheck.(int_range 0 100)
     (fun walls ->
-
       let players =
         create_list_of_player nb_players nb_walls (fun _ -> Moving (0, 0))
         |> List.map (fun player -> { player with walls_left = walls })
@@ -156,7 +147,6 @@ let number_of_walls_is_correct =
   [
     (* Just a dramatic example, QCheck is better for this (see other test cases) *)
     Alcotest.test_case "Can't have 100" `Quick (fun () ->
-  
         let players =
           create_list_of_player 2 10 (fun _ -> Moving (0, 0))
           |> List.map (fun player -> { player with walls_left = 100 })
@@ -167,14 +157,12 @@ let number_of_walls_is_correct =
           failwith "Players can't have 100 walls"
         with InvalidPlayerWallsLeft _ -> ());
     Alcotest.test_case "Accepts 10 walls | 2 players" `Quick (fun () ->
-  
         let players =
           create_list_of_player 2 10 (fun _ -> Moving (0, 0))
           |> List.map (fun player -> { player with walls_left = 10 })
         in
         add_players players);
     Alcotest.test_case "Accepts 5 walls | 4 players" `Quick (fun () ->
-  
         let players =
           create_list_of_player 4 5 (fun _ -> Moving (0, 0))
           |> List.map (fun player -> { player with walls_left = 5 })
@@ -188,30 +176,30 @@ let number_of_walls_is_correct =
 
 (* This test is no longer usable because the do-move function has been hidden
 
-let test_player_cannot_win_on_first_turn =
-  (* Moves a player starting from the top to the bottom of the board. It assumes that that player
-     is the second one and that the first one is on the left side of the board. There are only
-     two players in the game. *)
-  let move_to_the_end_strat _ =
-    List.init (board_size - 1) (fun i ->
-        if i mod 4 = 0 then Moving (2, board_size / 2)
-        else if i mod 2 = 0 then Moving (0, board_size / 2)
-        else Moving (board_size / 2, i + 1))
-    |> List.iter do_move;
-    Moving (2, board_size / 2)
-  in
-  Alcotest.test_case "Player cannot win on first turn" `Quick (fun () ->
-    
-          [
-            (Red, (0, board_size / 2), move_to_the_end_strat);
-            (Blue, (board_size / 2, 0), first_pick_strat);
-          ]
-          |> init_game;
-          try
-            Quoridor.Board.play ();
-            let _ = winning_player () in
-            failwith "Player can win on first turn"
-          with NoWinningPlayer _ | InvalidMove _ -> ())*)
+   let test_player_cannot_win_on_first_turn =
+     (* Moves a player starting from the top to the bottom of the board. It assumes that that player
+        is the second one and that the first one is on the left side of the board. There are only
+        two players in the game. *)
+     let move_to_the_end_strat _ =
+       List.init (board_size - 1) (fun i ->
+           if i mod 4 = 0 then Moving (2, board_size / 2)
+           else if i mod 2 = 0 then Moving (0, board_size / 2)
+           else Moving (board_size / 2, i + 1))
+       |> List.iter do_move;
+       Moving (2, board_size / 2)
+     in
+     Alcotest.test_case "Player cannot win on first turn" `Quick (fun () ->
+
+             [
+               (Red, (0, board_size / 2), move_to_the_end_strat);
+               (Blue, (board_size / 2, 0), first_pick_strat);
+             ]
+             |> init_game;
+             try
+               Quoridor.Board.play ();
+               let _ = winning_player () in
+               failwith "Player can win on first turn"
+             with NoWinningPlayer _ | InvalidMove _ -> ())*)
 
 let () =
   let open Alcotest in
