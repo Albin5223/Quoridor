@@ -83,7 +83,6 @@ val validate_wall_placement :
     @raise InvalidWallPosition if the wall positions are not valid or not adjacent and aligned.
     @raise InvalidGameState if the game is not in progress. *)
 
-
 val add_all_players_to_board : Types.player list -> unit
 
 val play : unit -> unit
@@ -92,9 +91,6 @@ val play : unit -> unit
 val winning_player : unit -> Types.player
 (** Returns the player who has reached their target zone.
     @raise NoWinningPlayer if no player has reached their target zone. *)
-
-val reset_board : unit -> unit
-(** Resets the game board to its initial state. *)
 
 val print_board : unit -> unit
 (** Prints the current state of the game board. *)

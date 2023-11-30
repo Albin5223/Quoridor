@@ -4,147 +4,144 @@ open Quoridor.Types
 
 (* These tests worked well but we can no longer add players one by one so they are commented
 
-let test_add_player_valid =
-  Alcotest.test_case "add_player_valid" `Quick (fun () ->
-      Board.reset_board ();
-      let player =
-        Engine.create_player (0, Board.board_size / 2) 10 Red Strategy.det_move
-      in
-      Board.add_player_to_board player;
-      Alcotest.(check bool)
-        "Player added correctly" true
-        (Board.is_player (0, Board.board_size / 2)))
+   let test_add_player_valid =
+     Alcotest.test_case "add_player_valid" `Quick (fun () ->
+         Board.reset_board ();
+         let player =
+           Engine.create_player (0, Board.board_size / 2) 10 Red Strategy.det_move
+         in
+         Board.add_player_to_board player;
+         Alcotest.(check bool)
+           "Player added correctly" true
+           (Board.is_player (0, Board.board_size / 2)))
 
-let test_add_player_invalid_position =
-  Alcotest.test_case "add_player_invalid_position" `Quick (fun () ->
-      Board.reset_board ();
-      try
-        let player = Engine.create_player (1, 1) 10 Blue Strategy.det_move in
-        Board.add_player_to_board player;
-        Alcotest.fail "No exception raised for invalid position"
-      with InvalidPlayerPosition _ -> ())
+   let test_add_player_invalid_position =
+     Alcotest.test_case "add_player_invalid_position" `Quick (fun () ->
+         Board.reset_board ();
+         try
+           let player = Engine.create_player (1, 1) 10 Blue Strategy.det_move in
+           Board.add_player_to_board player;
+           Alcotest.fail "No exception raised for invalid position"
+         with InvalidPlayerPosition _ -> ())
 
-let add_player_on_invalid_initial_position =
-  let open Quoridor.Board in
-  let valid_positions =
-    [
-      (0, board_size / 2);
-      (board_size - 1, board_size / 2);
-      (board_size / 2, 0);
-      (board_size / 2, board_size - 1);
-    ]
-  in
-  let open QCheck in
-  Test.make ~name:"add_player_on_invalid_initial_positions" ~count:1000
-    (pair (int_range 0 16) (int_range 0 16))
-    (fun (x, y) ->
-      assume (not (List.mem (x, y) valid_positions));
-      Board.reset_board ();
-      let player = Engine.create_player (x, y) 10 Red Strategy.det_move in
-      try
-        Board.add_player_to_board player;
-        false
-      with InvalidPlayerPosition _ -> true)
+   let add_player_on_invalid_initial_position =
+     let open Quoridor.Board in
+     let valid_positions =
+       [
+         (0, board_size / 2);
+         (board_size - 1, board_size / 2);
+         (board_size / 2, 0);
+         (board_size / 2, board_size - 1);
+       ]
+     in
+     let open QCheck in
+     Test.make ~name:"add_player_on_invalid_initial_positions" ~count:1000
+       (pair (int_range 0 16) (int_range 0 16))
+       (fun (x, y) ->
+         assume (not (List.mem (x, y) valid_positions));
+         Board.reset_board ();
+         let player = Engine.create_player (x, y) 10 Red Strategy.det_move in
+         try
+           Board.add_player_to_board player;
+           false
+         with InvalidPlayerPosition _ -> true)
 
-let test_add_player_invalid_color =
-  Alcotest.test_case "invalid_color" `Quick (fun () ->
-      Board.reset_board ();
-      let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
-      let p2 = Engine.create_player (8, 0) 10 Red Strategy.det_move in
-      Board.add_player_to_board p1;
-      try
-        Board.add_player_to_board p2;
-        Board.start_game ();
-        Alcotest.fail "Unraised exception when two players have the same color"
-      with InvalidPlayerColor _ -> ())
+   let test_add_player_invalid_color =
+     Alcotest.test_case "invalid_color" `Quick (fun () ->
+         Board.reset_board ();
+         let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
+         let p2 = Engine.create_player (8, 0) 10 Red Strategy.det_move in
+         Board.add_player_to_board p1;
+         try
+           Board.add_player_to_board p2;
+           Board.start_game ();
+           Alcotest.fail "Unraised exception when two players have the same color"
+         with InvalidPlayerColor _ -> ())
 
-let test_add_player_invalid_am_of_walls =
-  Alcotest.test_case "invalid number of walls" `Quick (fun () ->
-      Board.reset_board ();
-      try
-        let p1 = Engine.create_player (8, 16) 777 Red Strategy.det_move in
-        Board.add_player_to_board p1;
-        Board.start_game ()
-      with InvalidPlayerWallsLeft _ -> ())
+   let test_add_player_invalid_am_of_walls =
+     Alcotest.test_case "invalid number of walls" `Quick (fun () ->
+         Board.reset_board ();
+         try
+           let p1 = Engine.create_player (8, 16) 777 Red Strategy.det_move in
+           Board.add_player_to_board p1;
+           Board.start_game ()
+         with InvalidPlayerWallsLeft _ -> ())
 
-let test_move_player_valid =
-  Alcotest.test_case "move_player_valid" `Quick (fun () ->
-      Board.reset_board ();
-      let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
-      Board.add_player_to_board p1;
-      let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
-      Board.add_player_to_board p2;
-      Board.start_game ();
-      Board.do_move (Moving (8, 14));
-      Alcotest.(check bool)
-        "Player moved correctly" true
-        (Board.is_player (8, 14)))
+   let test_move_player_valid =
+     Alcotest.test_case "move_player_valid" `Quick (fun () ->
+         Board.reset_board ();
+         let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
+         Board.add_player_to_board p1;
+         let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
+         Board.add_player_to_board p2;
+         Board.start_game ();
+         Board.do_move (Moving (8, 14));
+         Alcotest.(check bool)
+           "Player moved correctly" true
+           (Board.is_player (8, 14)))
 
-let test_move_player_invalid =
-  Alcotest.test_case "move_player_invalid" `Quick (fun () ->
-      Board.reset_board ();
-      let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
-      Board.add_player_to_board p1;
-      let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
-      Board.add_player_to_board p2;
-      Board.start_game ();
-      try
-        Board.do_move (Moving (8, 13));
-        Alcotest.fail "No exception raised for invalid move"
-      with InvalidMove _ -> ())
+   let test_move_player_invalid =
+     Alcotest.test_case "move_player_invalid" `Quick (fun () ->
+         Board.reset_board ();
+         let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
+         Board.add_player_to_board p1;
+         let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
+         Board.add_player_to_board p2;
+         Board.start_game ();
+         try
+           Board.do_move (Moving (8, 13));
+           Alcotest.fail "No exception raised for invalid move"
+         with InvalidMove _ -> ())
 
-let test_place_wall_valid =
-  Alcotest.test_case "place_wall_valid" `Quick (fun () ->
-      Board.reset_board ();
-      let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
-      Board.add_player_to_board p1;
-      let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
-      Board.add_player_to_board p2;
-      Board.start_game ();
-      Board.do_move (Placing_wall ((1, 0), (1, 1)));
-      Alcotest.(check bool)
-        "Wall placed correctly" true
-        (Board.is_wall (1, 0) && Board.is_wall (1, 1)))
+   let test_place_wall_valid =
+     Alcotest.test_case "place_wall_valid" `Quick (fun () ->
+         Board.reset_board ();
+         let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
+         Board.add_player_to_board p1;
+         let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
+         Board.add_player_to_board p2;
+         Board.start_game ();
+         Board.do_move (Placing_wall ((1, 0), (1, 1)));
+         Alcotest.(check bool)
+           "Wall placed correctly" true
+           (Board.is_wall (1, 0) && Board.is_wall (1, 1)))
 
-let test_place_wall_invalid =
-  Alcotest.test_case "place_wall_invalid" `Quick (fun () ->
-      Board.reset_board ();
-      let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
-      Board.add_player_to_board p1;
-      let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
-      Board.add_player_to_board p2;
-      Board.start_game ();
-      try
-        Board.do_move (Placing_wall ((1, 1), (1, 3)));
-        Alcotest.fail "No exception raised for invalid wall placement"
-      with InvalidWallPosition _ -> ())
+   let test_place_wall_invalid =
+     Alcotest.test_case "place_wall_invalid" `Quick (fun () ->
+         Board.reset_board ();
+         let p1 = Engine.create_player (8, 16) 10 Red Strategy.det_move in
+         Board.add_player_to_board p1;
+         let p2 = Engine.create_player (8, 0) 10 Blue Strategy.det_move in
+         Board.add_player_to_board p2;
+         Board.start_game ();
+         try
+           Board.do_move (Placing_wall ((1, 1), (1, 3)));
+           Alcotest.fail "No exception raised for invalid wall placement"
+         with InvalidWallPosition _ -> ())
 
 
-      
-let test_winning_player_none =
-  Alcotest.test_case "winning_player_none" `Quick (fun () ->
-      Board.reset_board ();
-      let p1 =
-        Engine.create_player (0, Board.board_size / 2) 10 Red Strategy.det_move
-      in
-      Board.add_player_to_board p1;
-      let p2 = Engine.create_player (8, 0) 10 Yellow Strategy.det_move in
-      Board.add_player_to_board p2;
-      try
-        let _ = Board.winning_player () in
-        Alcotest.fail "No exception raised for no winning player"
-      with NoWinningPlayer _ -> ())
 
-      *)
+   let test_winning_player_none =
+     Alcotest.test_case "winning_player_none" `Quick (fun () ->
+         Board.reset_board ();
+         let p1 =
+           Engine.create_player (0, Board.board_size / 2) 10 Red Strategy.det_move
+         in
+         Board.add_player_to_board p1;
+         let p2 = Engine.create_player (8, 0) 10 Yellow Strategy.det_move in
+         Board.add_player_to_board p2;
+         try
+           let _ = Board.winning_player () in
+           Alcotest.fail "No exception raised for no winning player"
+         with NoWinningPlayer _ -> ())
+*)
 
 let test_starting_game =
   Alcotest.test_case "impossible_situation_to_start_game" `Quick (fun () ->
-      Board.reset_board ();
       try
         Board.start_game ();
         Alcotest.fail "No exception raised for starting incomplete game"
-      with InvalidNumberPlayer _ -> ())
-
+      with InvalidNumberPlayer _ | InvalidGameState _ -> ())
 
 let test_validate_position_valid =
   Alcotest.test_case "validate_position_valid" `Quick (fun () ->
@@ -225,31 +222,30 @@ let test_are_not_player_positions =
       not (Board.is_player_position (x, y)))
 
 (* This test is no longer usable because the do-move function has been hidden
-let test_is_wall =
-  Alcotest.test_case "is_wall" `Quick (fun () ->
-      Board.reset_board ();
-      let player1 =
-        Engine.create_player
-          (0, Board.board_size / 2)
-          10 Types.Red
-          (fun _ -> Moving (0, 0))
-      in
-      let player2 =
-        Engine.create_player
-          (Board.board_size - 1, Board.board_size / 2)
-          10 Types.Green
-          (fun _ -> Moving (0, 0))
-      in
-      Engine.add_players [ player1; player2 ];
-      Board.start_game ();
-      Board.do_move (Placing_wall ((1, 0), (1, 1)));
-      Alcotest.(check bool)
-        "Wall is present" true
-        (Board.is_wall (1, 0) && Board.is_wall (1, 1)))*)
+   let test_is_wall =
+     Alcotest.test_case "is_wall" `Quick (fun () ->
+         Board.reset_board ();
+         let player1 =
+           Engine.create_player
+             (0, Board.board_size / 2)
+             10 Types.Red
+             (fun _ -> Moving (0, 0))
+         in
+         let player2 =
+           Engine.create_player
+             (Board.board_size - 1, Board.board_size / 2)
+             10 Types.Green
+             (fun _ -> Moving (0, 0))
+         in
+         Engine.add_players [ player1; player2 ];
+         Board.start_game ();
+         Board.do_move (Placing_wall ((1, 0), (1, 1)));
+         Alcotest.(check bool)
+           "Wall is present" true
+           (Board.is_wall (1, 0) && Board.is_wall (1, 1)))*)
 
 let test_is_player =
   Alcotest.test_case "is_player" `Quick (fun () ->
-      Board.reset_board ();
       let player1 =
         Engine.create_player
           (0, Board.board_size / 2)
@@ -299,35 +295,35 @@ let test_list_of_moves_invalid_pos =
     "list_of_moves raises an exception for invalid position" Board.list_of_moves
 
 (* This test is no longer usable because the do-move function has been hidden
-let test_is_wall_between =
-  Alcotest.test_case "is_wall_between" `Quick (fun () ->
-      Board.reset_board ();
-      let player1 =
-        Engine.create_player
-          (0, Board.board_size / 2)
-          10 Types.Red
-          (fun _ -> Moving (0, 0))
-      in
-      let player2 =
-        Engine.create_player
-          (Board.board_size - 1, Board.board_size / 2)
-          10 Types.Green
-          (fun _ -> Moving (0, 0))
-      in
-      Engine.add_players [ player1; player2 ];
+   let test_is_wall_between =
+     Alcotest.test_case "is_wall_between" `Quick (fun () ->
+         Board.reset_board ();
+         let player1 =
+           Engine.create_player
+             (0, Board.board_size / 2)
+             10 Types.Red
+             (fun _ -> Moving (0, 0))
+         in
+         let player2 =
+           Engine.create_player
+             (Board.board_size - 1, Board.board_size / 2)
+             10 Types.Green
+             (fun _ -> Moving (0, 0))
+         in
+         Engine.add_players [ player1; player2 ];
 
-      Board.start_game ();
+         Board.start_game ();
 
-      let wall_pos1 = (1, 0) in
-      let wall_pos2 = (1, 1) in
-      Board.do_move (Placing_wall (wall_pos1, wall_pos2));
+         let wall_pos1 = (1, 0) in
+         let wall_pos2 = (1, 1) in
+         Board.do_move (Placing_wall (wall_pos1, wall_pos2));
 
-      let pos1 = (0, 0) in
-      let pos2 = (2, 0) in
+         let pos1 = (0, 0) in
+         let pos2 = (2, 0) in
 
-      Alcotest.(check bool)
-        "Wall is between pos1 and pos2" true
-        (Board.is_wall_between pos1 pos2))*)
+         Alcotest.(check bool)
+           "Wall is between pos1 and pos2" true
+           (Board.is_wall_between pos1 pos2))*)
 
 let () =
   let open Alcotest in
@@ -347,8 +343,8 @@ let () =
         ] );*)
       ("start_game", [ test_starting_game ]);
       (*("move_player", [ test_move_player_valid; test_move_player_invalid ]);
-      ("place_wall", [ test_place_wall_valid; test_place_wall_invalid ]);
-      ("winning_player", [ test_winning_player_none ]);*)
+        ("place_wall", [ test_place_wall_valid; test_place_wall_invalid ]);
+        ("winning_player", [ test_winning_player_none ]);*)
       ( "validate_position",
         [ test_validate_position_valid; test_validate_position_invalid ] );
       ( "validate_position_prop",
