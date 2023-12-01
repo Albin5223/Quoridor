@@ -398,6 +398,64 @@ let test_list_of_moves_blocked_player =
 
       Alcotest.(check bool) "test" true test)
 
+(**This function returns 2 random positions where we will and we can place a wall*)
+let pos_wall_random () =
+  let rec generate_random_wall_pos () =
+    let x1 = Random.int Board.board_size in
+    let y1 = Random.int Board.board_size in
+    let r = Random.int 4 in
+    let xv, yv = List.nth Board.move_vectors r in
+    try
+      Board.validate_wall_placement (Board.current_player ()) (x1, y1)
+        (x1 + xv, y1 + yv);
+      ((x1, y1), (x1 + xv, y1 + yv))
+    with
+    | InvalidWallPosition _ -> generate_random_wall_pos ()
+    | InvalidPosition _ -> generate_random_wall_pos ()
+    | InvalidWallPlacement _ -> generate_random_wall_pos ()
+  in
+  let wall_pos1, wall_pos2 = generate_random_wall_pos () in
+  Placing_wall (wall_pos1, wall_pos2)
+
+let test_game_blocked_player =
+  Alcotest.test_case "test if the game finish with partial random bot" `Quick
+    (fun () ->
+      let game =
+        let player1 =
+          Engine.create_player
+            (0, Board.board_size / 2)
+            10 Types.Red
+            (fun (a, b) ->
+              if a = 0 then Moving (a + 2, b)
+              else if List.length (Board.adjacent_walls (a, b)) = 0 then
+                Placing_wall
+                  ((1, Board.board_size / 2), (1, (Board.board_size / 2) - 1))
+              else if List.length (Board.adjacent_walls (a, b)) = 1 then
+                Placing_wall
+                  ( (2, (Board.board_size / 2) - 1),
+                    (3, (Board.board_size / 2) - 1) )
+              else if List.length (Board.adjacent_walls (a, b)) = 2 then
+                Placing_wall
+                  ((3, Board.board_size / 2), (3, (Board.board_size / 2) + 1))
+              else if List.length (Board.adjacent_walls (a, b)) = 3 then
+                Placing_wall
+                  ( (2, (Board.board_size / 2) + 1),
+                    (1, (Board.board_size / 2) + 1) )
+              else pos_wall_random ())
+        in
+        let player2 =
+          Engine.create_player
+            (Board.board_size - 1, Board.board_size / 2)
+            10 Types.Green
+            (fun (a, b) ->
+              if not (b = Board.board_size / 2) then Moving (a - 2, b)
+              else Moving (a, b + 2))
+        in
+        let players = [ player1; player2 ] in
+        try Ok (Engine.run_game players) with e -> Error e
+      in
+      Alcotest.(check bool) "same result" true (Result.is_ok game))
+
 let () =
   let open Alcotest in
   run "Board Tests"
@@ -442,4 +500,5 @@ let () =
           test_list_of_moves_of_init_player;
           test_list_of_moves_blocked_player;
         ] );
+      ("test_game_bot", [ test_game_blocked_player ]);
     ]
