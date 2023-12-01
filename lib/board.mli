@@ -15,7 +15,7 @@ val move_vectors : (int * int) list
 
 val start_game : unit -> unit
 (** Starts the game.
-    @raise InvalidNumberPlayer if the number of players is not between 2 and 4.
+    @raise InvalidNumberPlayer if the number of players is neither two nor four.
     @raise InvalidGameState if the game is not in the WaitingToStart state. *)
 
 val current_player : unit -> Types.player
