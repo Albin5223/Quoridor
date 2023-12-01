@@ -13,7 +13,6 @@ let valid_positions =
 
 let test_add_player_valid =
   Alcotest.test_case "add_player_valid" `Quick (fun () ->
-      Board.reset_board ();
       let player =
         Engine.create_player (0, Board.board_size / 2) 10 Red Strategy.det_move
       in
@@ -28,7 +27,6 @@ let add_player_on_invalid_initial_position =
     (pair (int_range 0 16) (int_range 0 16))
     (fun (x, y) ->
       assume (not (List.mem (x, y) valid_positions));
-      Board.reset_board ();
       let player = Engine.create_player (x, y) 10 Red Strategy.det_move in
       try
         Board.add_all_players_to_board [ player ];
@@ -42,7 +40,6 @@ let test_add_players_invalid_color =
     (pair arbitrary_color (int_range 1 2))
     (fun (color, nb_players) ->
       let nb_players = 2 * nb_players in
-      Board.reset_board ();
       let players =
         List.init nb_players (fun index ->
             Engine.create_player
@@ -62,7 +59,6 @@ let test_add_player_invalid_nb_of_walls =
       let len = List.length walls_left_list in
       assume (len = 2 || len = 4);
       assume (List.for_all (fun p -> p <> 20 / len) walls_left_list);
-      Board.reset_board ();
       let bi_colors = [ Red; Blue ] and colors = [ Red; Blue; Green; Yellow ] in
       let players =
         mapi2
@@ -82,7 +78,6 @@ let test_add_player_invalid_nb_of_walls =
 
 let test_winning_player_none =
   Alcotest.test_case "winning_player_none" `Quick (fun () ->
-      Board.reset_board ();
       let p1 =
         Engine.create_player (0, Board.board_size / 2) 10 Red Strategy.det_move
       in
@@ -95,11 +90,17 @@ let test_winning_player_none =
 
 let test_starting_game =
   Alcotest.test_case "impossible_situation_to_start_game" `Quick (fun () ->
-      Board.reset_board ();
       try
+        let player1 =
+          Engine.create_player
+            (0, Board.board_size / 2)
+            10 Types.Red
+            (fun _ -> Moving (0, 0))
+        in 
+        Board.add_all_players_to_board [ player1 ];
         Board.start_game ();
         Alcotest.fail "No exception raised for starting incomplete game"
-      with InvalidNumberPlayer _ -> ())
+      with InvalidNumberPlayer _ | InvalidGameState _ -> ())
 
 let test_validate_position_valid =
   Alcotest.test_case "validate_position_valid" `Quick (fun () ->
@@ -179,9 +180,31 @@ let test_are_not_player_positions =
         && x >= 0 && y >= 0 && x <= 16 && y <= 16);
       not (Board.is_player_position (x, y)))
 
+(* This test is no longer usable because the do-move function has been hidden
+   let test_is_wall =
+     Alcotest.test_case "is_wall" `Quick (fun () ->
+         Board.reset_board ();
+         let player1 =
+           Engine.create_player
+             (0, Board.board_size / 2)
+             10 Types.Red
+             (fun _ -> Moving (0, 0))
+         in
+         let player2 =
+           Engine.create_player
+             (Board.board_size - 1, Board.board_size / 2)
+             10 Types.Green
+             (fun _ -> Moving (0, 0))
+         in
+         Engine.add_players [ player1; player2 ];
+         Board.start_game ();
+         Board.do_move (Placing_wall ((1, 0), (1, 1)));
+         Alcotest.(check bool)
+           "Wall is present" true
+           (Board.is_wall (1, 0) && Board.is_wall (1, 1)))*)
+
 let test_is_player =
   Alcotest.test_case "is_player" `Quick (fun () ->
-      Board.reset_board ();
       let player1 =
         Engine.create_player
           (0, Board.board_size / 2)
@@ -229,6 +252,37 @@ let test_invalid_adj_walls_position =
 let test_list_of_moves_invalid_pos =
   test_invalid_pos_function
     "list_of_moves raises an exception for invalid position" Board.list_of_moves
+
+(* This test is no longer usable because the do-move function has been hidden
+   let test_is_wall_between =
+     Alcotest.test_case "is_wall_between" `Quick (fun () ->
+         Board.reset_board ();
+         let player1 =
+           Engine.create_player
+             (0, Board.board_size / 2)
+             10 Types.Red
+             (fun _ -> Moving (0, 0))
+         in
+         let player2 =
+           Engine.create_player
+             (Board.board_size - 1, Board.board_size / 2)
+             10 Types.Green
+             (fun _ -> Moving (0, 0))
+         in
+         Engine.add_players [ player1; player2 ];
+
+         Board.start_game ();
+
+         let wall_pos1 = (1, 0) in
+         let wall_pos2 = (1, 1) in
+         Board.do_move (Placing_wall (wall_pos1, wall_pos2));
+
+         let pos1 = (0, 0) in
+         let pos2 = (2, 0) in
+
+         Alcotest.(check bool)
+           "Wall is between pos1 and pos2" true
+           (Board.is_wall_between pos1 pos2))*)
 
 let () =
   let open Alcotest in

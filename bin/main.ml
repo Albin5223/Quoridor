@@ -57,11 +57,11 @@ let create_lst_of_player nb_players walls_left =
   if nb_players <> 2 && nb_players <> 4 then
     raise
       (InvalidNumberPlayer
-         ( nb_players,
-           "Number of players must be 2 or 4 to start the game" ))
+         (nb_players, "Number of players must be 2 or 4 to start the game"))
   else
     List.init nb_players (fun i ->
-        create_player (List.nth positions i) walls_left (List.nth colors i) det_move)
+        create_player (List.nth positions i) walls_left (List.nth colors i)
+          det_move)
 
 let () =
   let lst_player = create_lst_of_player 4 5 in

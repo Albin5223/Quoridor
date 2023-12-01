@@ -14,24 +14,18 @@ let add_players player_lst =
   let num_players = List.length player_lst in
   if num_players <> 2 && num_players <> 4 then
     raise
-        (InvalidNumberPlayer
-           ( num_players,
-             "Number of players must be 2 or 4 to start the game" ))
-  else
-    if not (List.for_all (fun p -> p.walls_left = 20 / num_players) player_lst) then
-      raise
-        (InvalidPlayerWallsLeft
-          ("The number of walls for each player is not allowed"))
-    else
-       
-    add_all_players_to_board player_lst
-
-
-    
+      (InvalidNumberPlayer
+         (num_players, "Number of players must be 2 or 4 to start the game"))
+  else if
+    not (List.for_all (fun p -> p.walls_left = 20 / num_players) player_lst)
+  then
+    raise
+      (InvalidPlayerWallsLeft
+         "The number of walls for each player is not allowed")
+  else add_all_players_to_board player_lst
 
 let run_game player_lst =
   Random.self_init ();
-  reset_board ();
   let rec aux () =
     Board.print_board ();
     try
