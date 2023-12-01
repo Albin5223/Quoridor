@@ -325,6 +325,79 @@ let test_list_of_moves_invalid_pos =
            "Wall is between pos1 and pos2" true
            (Board.is_wall_between pos1 pos2))*)
 
+let init_game_two_player () =
+  let player1 =
+    Engine.create_player
+      (0, Board.board_size / 2)
+      10 Types.Red
+      (fun (a, b) ->
+        if a = 0 then Moving (a + 2, b)
+        else if List.length (Board.adjacent_walls (a, b)) = 0 then
+          Placing_wall
+            ((1, Board.board_size / 2), (1, (Board.board_size / 2) - 1))
+        else if List.length (Board.adjacent_walls (a, b)) = 1 then
+          Placing_wall
+            ((2, (Board.board_size / 2) - 1), (3, (Board.board_size / 2) - 1))
+        else if List.length (Board.adjacent_walls (a, b)) = 2 then
+          Placing_wall
+            ((3, Board.board_size / 2), (3, (Board.board_size / 2) + 1))
+        else
+          Placing_wall
+            ((2, (Board.board_size / 2) + 1), (1, (Board.board_size / 2) + 1)))
+  in
+  let player2 =
+    Engine.create_player
+      (Board.board_size - 1, Board.board_size / 2)
+      10 Types.Green
+      (fun (a, b) ->
+        if a = Board.board_size - 3 then Moving (a + 2, b) else Moving (a - 2, b))
+  in
+  Engine.add_players [ player1; player2 ];
+  Board.start_game ()
+
+let sort_pos_list pos_list = List.sort compare pos_list
+
+let test_list_of_moves_of_init_player =
+  Alcotest.test_case "test list_of_moves" `Quick (fun () ->
+      init_game_two_player ();
+      let move_list_player1 = Board.list_of_moves (0, Board.board_size / 2) in
+      let move_list_player2 =
+        Board.list_of_moves (Board.board_size - 1, Board.board_size / 2)
+      in
+      let test =
+        sort_pos_list move_list_player1
+        = sort_pos_list
+            [
+              (0, (Board.board_size / 2) - 2);
+              (0, (Board.board_size / 2) + 2);
+              (2, Board.board_size / 2);
+            ]
+        && sort_pos_list move_list_player2
+           = sort_pos_list
+               [
+                 (Board.board_size - 1, (Board.board_size / 2) - 2);
+                 (Board.board_size - 1, (Board.board_size / 2) + 2);
+                 (Board.board_size - 3, Board.board_size / 2);
+               ]
+      in
+      let _ = Board.play () in
+      Alcotest.(check bool) "test" true test)
+
+let test_list_of_moves_blocked_player =
+  Alcotest.test_case "test list_of_moves" `Quick (fun () ->
+      init_game_two_player ();
+      let rec loop_play i =
+        if i = 9 then ()
+        else (
+          Board.play ();
+          loop_play (i + 1))
+      in
+      loop_play 0;
+      let move_list_player1 = Board.list_of_moves (2, Board.board_size / 2) in
+      let test = move_list_player1 = [] in
+
+      Alcotest.(check bool) "test" true test)
+
 let () =
   let open Alcotest in
   run "Board Tests"
@@ -363,6 +436,10 @@ let () =
       ( "adjacent_functions",
         [ test_invalid_adj_players_position; test_invalid_adj_walls_position ]
       );
-      ("list_of_moves", [ test_list_of_moves_invalid_pos ]);
-      (*("is_wall_between", [ test_is_wall_between ]);*)
+      ( "list_of_moves",
+        [
+          test_list_of_moves_invalid_pos;
+          test_list_of_moves_of_init_player;
+          test_list_of_moves_blocked_player;
+        ] );
     ]
