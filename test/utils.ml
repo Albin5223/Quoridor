@@ -2,6 +2,38 @@ open Quoridor.Types
 open Quoridor.Board
 open Quoridor.Engine
 
+(** @raises Invalid_argument if the two lists are determined to have different lengths *)
+let mapi2 f a b =
+  if List.length a <> List.length b then
+    raise (Invalid_argument "The two lists have different lengths.")
+  else
+    let rec aux i a b =
+      match (a, b) with
+      | [], [] -> []
+      | ha :: ta, hb :: tb -> f i ha hb :: aux (i + 1) ta tb
+      | _ -> raise (Invalid_argument "The two lists have different lengths.")
+      (* Unreachable *)
+    in
+    aux 0 a b
+
+let pp_color ff color =
+  let color =
+    match color with
+    | Red -> "Red"
+    | Green -> "Green"
+    | Blue -> "Blue"
+    | Yellow -> "Yellow"
+  in
+  Format.fprintf ff "%s" color
+
+let color_generator =
+  let open QCheck in
+  Gen.oneof
+    [ Gen.return Red; Gen.return Green; Gen.return Yellow; Gen.return Blue ]
+
+let arbitrary_color =
+  QCheck.make ~print:(Format.asprintf "%a" pp_color) color_generator
+
 let create_list_of_player nb_players walls_left strat =
   let colors = [ Red; Blue; Green; Yellow ] in
   let positions =
