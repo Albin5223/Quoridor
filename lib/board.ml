@@ -2,19 +2,14 @@ open Types
 
 type cell_content = Empty | Wall | Player of player
 type board = cell_content array array
-
-type state = {
-  mutable players : player list;
-  mutable status : game_status;
-}
+type state = { mutable players : player list; mutable status : game_status }
 
 let board_size = 17
 let game_board = Array.make_matrix board_size board_size Empty
 let move_vectors = [ (-1, 0); (1, 0); (0, -1); (0, 1) ]
 
 (* Storage of the player list to avoid browsing the entire board, as well as the game status. *)
-let game_state =
-  { players = []; status = WaitingToStart;}
+let game_state = { players = []; status = WaitingToStart }
 
 let validate_game_in_progress_status () =
   match game_state.status with
@@ -36,8 +31,6 @@ let reset_board () =
   done;
   game_state.players <- [];
   game_state.status <- WaitingToStart
-
-
 
 let start_game () =
   let num_players = List.length game_state.players in
@@ -256,8 +249,7 @@ let will_wall_block_player () =
           Format.printf "pos: %d,%d"
             (fst pos + fst pos_vect)
             (snd pos + snd pos_vect);
-          try
-          is_wall (fst pos + fst pos_vect, snd pos + snd pos_vect)
+          try is_wall (fst pos + fst pos_vect, snd pos + snd pos_vect)
           with InvalidPosition _ -> false)
         move_vectors)
     game_state.players

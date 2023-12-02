@@ -387,19 +387,18 @@ let test_list_of_moves_blocked_player =
   Alcotest.test_case "test list_of_moves" `Quick (fun () ->
       init_game_two_player ();
       try
-      let rec loop_play i =
-        if i = 9 then ()
-        else (
-          Board.play ();
-          loop_play (i + 1))
-      in
-      loop_play 0;
-      let move_list_player1 = Board.list_of_moves (2, Board.board_size / 2) in
-      let test = move_list_player1 = [] in
+        let rec loop_play i =
+          if i = 9 then ()
+          else (
+            Board.play ();
+            loop_play (i + 1))
+        in
+        loop_play 0;
+        let move_list_player1 = Board.list_of_moves (2, Board.board_size / 2) in
+        let test = move_list_player1 = [] in
 
-      Alcotest.(check bool) "test" true test
-      
-    with InvalidWallPlacement _ -> Alcotest.(check bool) "test" true true)
+        Alcotest.(check bool) "test" true test
+      with InvalidWallPlacement _ -> Alcotest.(check bool) "test" true true)
 
 (**This function returns 2 random positions where we will and we can place a wall*)
 let pos_wall_random () =
@@ -455,7 +454,10 @@ let test_game_blocked_player =
               else Moving (a, b + 2))
         in
         let players = [ player1; player2 ] in
-        try let _ = Engine.run_game players in false with _ -> true
+        try
+          let _ = Engine.run_game players in
+          false
+        with _ -> true
       in
       Alcotest.(check bool) "same result" true game)
 
