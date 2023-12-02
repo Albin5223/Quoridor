@@ -452,9 +452,12 @@ let test_game_blocked_player =
               else Moving (a, b + 2))
         in
         let players = [ player1; player2 ] in
-        try Ok (Engine.run_game players) with e -> Error e
+        try
+          let _ = Engine.run_game players in
+          false
+        with _ -> true
       in
-      Alcotest.(check bool) "same result" true (Result.is_ok game))
+      Alcotest.(check bool) "same result" true game)
 
 let () =
   let open Alcotest in

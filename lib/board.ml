@@ -6,7 +6,7 @@ type board = cell_content array array
 type state = {
   mutable players : player list;
   mutable status : game_status;
-  players_added : bool;
+  mutable players_added : bool;
 }
 
 let board_size = 17
@@ -37,6 +37,11 @@ let reset_board () =
   done;
   game_state.players <- [];
   game_state.status <- WaitingToStart
+
+let reset_state () =
+  game_state.players <- [];
+  game_state.status <- WaitingToStart;
+  game_state.players_added <- false
 
 let start_game () =
   let num_players = List.length game_state.players in
@@ -246,7 +251,22 @@ let dfs_path_exists player pos1 pos2 =
   in
   dfs start_pos
 
+let will_wall_block_player () =
+  Format.printf "will_wall_block_player";
+  List.exists
+    (fun player ->
+      let pos = player.current_position in
+      List.for_all
+        (fun pos_vect ->
+          Format.printf "pos: %d,%d"
+            (fst pos + fst pos_vect)
+            (snd pos + snd pos_vect);
+          is_wall (fst pos + fst pos_vect, snd pos + snd pos_vect))
+        move_vectors)
+    game_state.players
+
 let validate_wall_placement player pos1 pos2 =
+  Format.printf "validate_wall_placement";
   if player.walls_left <= 0 then
     raise
       (InvalidWallPlacement (pos1, pos2, "Player has no walls left to place"));
@@ -280,6 +300,7 @@ let validate_wall_placement player pos1 pos2 =
 let compare_player p1 p2 = p1.color = p2.color
 
 let place_wall pos1 pos2 =
+  Format.printf "place_wall";
   validate_game_in_progress_status ();
 
   let player = current_player () in
@@ -299,6 +320,11 @@ let place_wall pos1 pos2 =
 
   let x, y = player.current_position in
   game_board.(y).(x) <- Player updated_player;
+
+  if will_wall_block_player () then
+    raise
+      (InvalidWallPlacement
+         (pos1, pos2, "Wall placement blocks a player's path to goal"));
 
   update_player_order ()
 
@@ -370,6 +396,7 @@ let add_player_to_board player =
 
 let add_all_players_to_board players =
   reset_board ();
+  reset_state ();
   if game_state.players_added then
     raise
       (InvalidNumberPlayer
