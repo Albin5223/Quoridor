@@ -6,7 +6,6 @@ type board = cell_content array array
 type state = {
   mutable players : player list;
   mutable status : game_status;
-  mutable players_added : bool;
 }
 
 let board_size = 17
@@ -15,7 +14,7 @@ let move_vectors = [ (-1, 0); (1, 0); (0, -1); (0, 1) ]
 
 (* Storage of the player list to avoid browsing the entire board, as well as the game status. *)
 let game_state =
-  { players = []; status = WaitingToStart; players_added = false }
+  { players = []; status = WaitingToStart;}
 
 let validate_game_in_progress_status () =
   match game_state.status with
@@ -38,10 +37,7 @@ let reset_board () =
   game_state.players <- [];
   game_state.status <- WaitingToStart
 
-let reset_state () =
-  game_state.players <- [];
-  game_state.status <- WaitingToStart;
-  game_state.players_added <- false
+
 
 let start_game () =
   let num_players = List.length game_state.players in
@@ -252,7 +248,6 @@ let dfs_path_exists player pos1 pos2 =
   dfs start_pos
 
 let will_wall_block_player () =
-  Format.printf "will_wall_block_player";
   List.exists
     (fun player ->
       let pos = player.current_position in
@@ -261,12 +256,13 @@ let will_wall_block_player () =
           Format.printf "pos: %d,%d"
             (fst pos + fst pos_vect)
             (snd pos + snd pos_vect);
-          is_wall (fst pos + fst pos_vect, snd pos + snd pos_vect))
+          try
+          is_wall (fst pos + fst pos_vect, snd pos + snd pos_vect)
+          with InvalidPosition _ -> false)
         move_vectors)
     game_state.players
 
 let validate_wall_placement player pos1 pos2 =
-  Format.printf "validate_wall_placement";
   if player.walls_left <= 0 then
     raise
       (InvalidWallPlacement (pos1, pos2, "Player has no walls left to place"));
@@ -300,7 +296,6 @@ let validate_wall_placement player pos1 pos2 =
 let compare_player p1 p2 = p1.color = p2.color
 
 let place_wall pos1 pos2 =
-  Format.printf "place_wall";
   validate_game_in_progress_status ();
 
   let player = current_player () in
@@ -396,11 +391,6 @@ let add_player_to_board player =
 
 let add_all_players_to_board players =
   reset_board ();
-  reset_state ();
-  if game_state.players_added then
-    raise
-      (InvalidNumberPlayer
-         (List.length players, "Cannot add more players to the board"));
   List.iter (fun p -> add_player_to_board p) players
 
 let do_move (move : Types.move) =
