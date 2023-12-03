@@ -2,20 +2,14 @@ open Types
 
 type cell_content = Empty | Wall | Player of player
 type board = cell_content array array
-
-type state = {
-  mutable players : player list;
-  mutable status : game_status;
-  players_added : bool;
-}
+type state = { mutable players : player list; mutable status : game_status }
 
 let board_size = 17
 let game_board = Array.make_matrix board_size board_size Empty
 let move_vectors = [ (-1, 0); (1, 0); (0, -1); (0, 1) ]
 
 (* Storage of the player list to avoid browsing the entire board, as well as the game status. *)
-let game_state =
-  { players = []; status = WaitingToStart; players_added = false }
+let game_state = { players = []; status = WaitingToStart }
 
 let validate_game_in_progress_status () =
   match game_state.status with
@@ -246,6 +240,20 @@ let dfs_path_exists player pos1 pos2 =
   in
   dfs start_pos
 
+let will_wall_block_player () =
+  List.exists
+    (fun player ->
+      let pos = player.current_position in
+      List.for_all
+        (fun pos_vect ->
+          Format.printf "pos: %d,%d"
+            (fst pos + fst pos_vect)
+            (snd pos + snd pos_vect);
+          try is_wall (fst pos + fst pos_vect, snd pos + snd pos_vect)
+          with InvalidPosition _ -> false)
+        move_vectors)
+    game_state.players
+
 let validate_wall_placement player pos1 pos2 =
   if player.walls_left <= 0 then
     raise
@@ -299,6 +307,11 @@ let place_wall pos1 pos2 =
 
   let x, y = player.current_position in
   game_board.(y).(x) <- Player updated_player;
+
+  if will_wall_block_player () then
+    raise
+      (InvalidWallPlacement
+         (pos1, pos2, "Wall placement blocks a player's path to goal"));
 
   update_player_order ()
 
@@ -370,10 +383,6 @@ let add_player_to_board player =
 
 let add_all_players_to_board players =
   reset_board ();
-  if game_state.players_added then
-    raise
-      (InvalidNumberPlayer
-         (List.length players, "Cannot add more players to the board"));
   List.iter (fun p -> add_player_to_board p) players
 
 let do_move (move : Types.move) =
