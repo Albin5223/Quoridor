@@ -97,3 +97,9 @@ val print_board : unit -> unit
 
 val color_to_string : Types.player -> string
 (** Returns the color of a player as a string. *)
+
+val get_all_wall_pos : unit -> Types.position list
+(** Returns a list of all wall positions on the board. *)
+
+val get_all_player_pos : unit -> Types.position list
+(** Returns a list of all player positions on the board. *)

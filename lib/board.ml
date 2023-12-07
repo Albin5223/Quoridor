@@ -2,14 +2,19 @@ open Types
 
 type cell_content = Empty | Wall | Player of player
 type board = cell_content array array
-type state = { mutable players : player list; mutable status : game_status }
+
+type state = {
+  mutable players : player list;
+  mutable status : game_status;
+  mutable walls_pos : position list;
+}
 
 let board_size = 17
 let game_board = Array.make_matrix board_size board_size Empty
 let move_vectors = [ (-1, 0); (1, 0); (0, -1); (0, 1) ]
 
 (* Storage of the player list to avoid browsing the entire board, as well as the game status. *)
-let game_state = { players = []; status = WaitingToStart }
+let game_state = { players = []; status = WaitingToStart; walls_pos = [] }
 
 let validate_game_in_progress_status () =
   match game_state.status with
@@ -312,7 +317,7 @@ let place_wall pos1 pos2 =
     raise
       (InvalidWallPlacement
          (pos1, pos2, "Wall placement blocks a player's path to goal"));
-
+  game_state.walls_pos <- pos1 :: pos2 :: game_state.walls_pos;
   update_player_order ()
 
 let move_player pos =
@@ -455,3 +460,8 @@ let color_to_string player =
   | Green -> "green"
   | Blue -> "blue"
   | Yellow -> "yellow"
+
+let get_all_wall_pos () = List.map (fun (x, y) -> (x, y)) game_state.walls_pos
+
+let get_all_player_pos () =
+  List.map (fun p -> p.current_position) game_state.players
