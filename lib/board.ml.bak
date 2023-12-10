@@ -2,19 +2,14 @@ open Types
 
 type cell_content = Empty | Wall | Player of player
 type board = cell_content array array
-
-type state = {
-  mutable players : player list;
-  mutable status : game_status;
-  mutable walls_pos : position list;
-}
+type state = { mutable players : player list; mutable status : game_status }
 
 let board_size = 17
 let game_board = Array.make_matrix board_size board_size Empty
 let move_vectors = [ (-1, 0); (1, 0); (0, -1); (0, 1) ]
 
 (* Storage of the player list to avoid browsing the entire board, as well as the game status. *)
-let game_state = { players = []; status = WaitingToStart; walls_pos = [] }
+let game_state = { players = []; status = WaitingToStart }
 
 let validate_game_in_progress_status () =
   match game_state.status with
@@ -204,27 +199,6 @@ let list_of_moves pos =
         with InvalidPosition _ -> acc)
     [] move_vectors
 
-
-let target_zone player =
-  match player.start_position with
-    | x, _ when x = 0 ->
-      (* Start at left border *)
-      fun (x, _) -> x = board_size - 1
-    | x, _ when x = board_size - 1 ->
-      (* Start at right border *)
-      fun (x, _) -> x = 0
-    | _, y when y = 0 ->
-      (* Start at top border *)
-      fun (_, y) -> y = board_size - 1
-    | _, y when y = board_size - 1 ->
-      (* Start at bottom border *)
-      fun (_, y) -> y = 0
-    | _ ->
-      raise
-        (InvalidPlayerPosition
-          (player.start_position, "Invalid start position"))
-
-
 let dfs_path_exists player pos1 pos2 =
   let start_pos = player.current_position in
 
@@ -236,10 +210,19 @@ let dfs_path_exists player pos1 pos2 =
   (* Creation of a matrix to track visited positions *)
   let visited = Array.make_matrix board_size board_size false in
 
+  (* Target to reach for each color *)
+  let is_target_position pos =
+    let x, y = pos in
+    match player.color with
+    | Blue -> y = 0
+    | Red -> y = board_size - 1
+    | Yellow -> x = 0
+    | Green -> x = board_size - 1
+  in
+
   let rec dfs pos =
     let x, y = pos in
-    let is_target_pos = target_zone player in
-    if is_target_pos pos then true
+    if is_target_position pos then true
     else if visited.(y).(x) then false
     else (
       visited.(y).(x) <- true;
@@ -329,7 +312,7 @@ let place_wall pos1 pos2 =
     raise
       (InvalidWallPlacement
          (pos1, pos2, "Wall placement blocks a player's path to goal"));
-  game_state.walls_pos <- pos1 :: pos2 :: game_state.walls_pos;
+
   update_player_order ()
 
 let move_player pos =
@@ -416,8 +399,26 @@ let play () =
 let winning_player () =
   (* Function to check if a player has reached their target zone *)
   let player_reached_target player =
-    (target_zone player)
-      (player.current_position)
+    let target_zone =
+      match player.start_position with
+      | x, _ when x = 0 ->
+          (* Start at left border *)
+          fun (x, _) -> x = board_size - 1
+      | x, _ when x = board_size - 1 ->
+          (* Start at right border *)
+          fun (x, _) -> x = 0
+      | _, y when y = 0 ->
+          (* Start at top border *)
+          fun (_, y) -> y = board_size - 1
+      | _, y when y = board_size - 1 ->
+          (* Start at bottom border *)
+          fun (_, y) -> y = 0
+      | _ ->
+          raise
+            (InvalidPlayerPosition
+               (player.start_position, "Invalid start position"))
+    in
+    target_zone player.current_position
   in
   try
     let winner = List.find player_reached_target game_state.players in
@@ -454,8 +455,3 @@ let color_to_string player =
   | Green -> "green"
   | Blue -> "blue"
   | Yellow -> "yellow"
-
-let get_all_wall_pos () = List.map (fun (x, y) -> (x, y)) game_state.walls_pos
-
-let get_all_player_pos () =
-  List.map (fun p -> p.current_position) game_state.players

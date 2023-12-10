@@ -45,7 +45,7 @@ let det_move pos =
     @return the list of players to add to the game
     *)
 let create_lst_of_player nb_players walls_left =
-  let colors = [ Red; Blue; Green; Yellow ] in
+  let colors = [ Blue; Red; Green; Yellow ] in
   let positions =
     [
       (board_size / 2, 0);
