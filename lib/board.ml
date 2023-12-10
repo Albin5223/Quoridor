@@ -204,26 +204,23 @@ let list_of_moves pos =
         with InvalidPosition _ -> acc)
     [] move_vectors
 
-
 let target_zone player =
   match player.start_position with
-    | x, _ when x = 0 ->
+  | x, _ when x = 0 ->
       (* Start at left border *)
       fun (x, _) -> x = board_size - 1
-    | x, _ when x = board_size - 1 ->
+  | x, _ when x = board_size - 1 ->
       (* Start at right border *)
       fun (x, _) -> x = 0
-    | _, y when y = 0 ->
+  | _, y when y = 0 ->
       (* Start at top border *)
       fun (_, y) -> y = board_size - 1
-    | _, y when y = board_size - 1 ->
+  | _, y when y = board_size - 1 ->
       (* Start at bottom border *)
       fun (_, y) -> y = 0
-    | _ ->
+  | _ ->
       raise
-        (InvalidPlayerPosition
-          (player.start_position, "Invalid start position"))
-
+        (InvalidPlayerPosition (player.start_position, "Invalid start position"))
 
 let dfs_path_exists player pos1 pos2 =
   let start_pos = player.current_position in
@@ -416,8 +413,7 @@ let play () =
 let winning_player () =
   (* Function to check if a player has reached their target zone *)
   let player_reached_target player =
-    (target_zone player)
-      (player.current_position)
+    (target_zone player) player.current_position
   in
   try
     let winner = List.find player_reached_target game_state.players in
