@@ -454,4 +454,4 @@ let color_to_string player =
 let get_all_wall_pos () = List.map (fun (x, y) -> (x, y)) game_state.walls_pos
 
 let get_all_player_pos () =
-  List.map (fun p -> p.current_position) game_state.players
+  List.map (fun p -> (p.start_position, p.current_position)) game_state.players
