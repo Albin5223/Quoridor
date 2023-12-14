@@ -103,3 +103,9 @@ val get_all_wall_pos : unit -> Types.position list
 
 val get_all_player_pos : unit -> (Types.position * Types.position) list
 (** Returns a list of all player positions (start_pos, current_pos) on the board. *)
+
+val get_color : Types.position -> Types.color
+(** Returns the color of a player if there is one at the given position.
+    @param pos The position to check.
+    @return The color of the player at the given position.
+    @raise InvalidPlayerPosition if the given position is not a player's position. *)

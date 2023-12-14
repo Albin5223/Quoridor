@@ -455,3 +455,11 @@ let get_all_wall_pos () = List.map (fun (x, y) -> (x, y)) game_state.walls_pos
 
 let get_all_player_pos () =
   List.map (fun p -> (p.start_position, p.current_position)) game_state.players
+
+let get_color pos =
+  let x, y = pos in
+  let cell = game_board.(y).(x) in
+  match cell with
+  | Player p -> p.color
+  | Wall -> raise (InvalidPosition (pos, "Wall position"))
+  | Empty -> raise (InvalidPosition (pos, "Empty position"))
