@@ -408,7 +408,7 @@ let pos_wall_random () =
     let r = Random.int 4 in
     let xv, yv = List.nth Board.move_vectors r in
     try
-      Board.validate_wall_placement (Board.current_player ()) (x1, y1)
+      Board.validate_wall_placement (Board.current_player ()).walls_left (x1, y1)
         (x1 + xv, y1 + yv);
       ((x1, y1), (x1 + xv, y1 + yv))
     with
