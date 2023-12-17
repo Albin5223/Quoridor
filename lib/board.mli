@@ -73,10 +73,9 @@ val list_of_moves : Types.position -> Types.position list
     @raise InvalidPlayerPosition if the given position is not a player's position. 
     @note This function takes into account the presence of walls and other players. *)
 
-val validate_wall_placement :
-  Types.player -> Types.position -> Types.position -> unit
+val validate_wall_placement : int -> Types.position -> Types.position -> unit
 (** Validates the placement of a wall by a player.
-    @param player The player placing the wall.
+    @param wall_left The number of walls.
     @param pos1 The first position of the wall.
     @param pos2 The second position of the wall.
     @raise InvalidWallPlacement if the player has no walls left or the wall placement is invalid.

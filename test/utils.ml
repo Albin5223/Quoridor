@@ -71,7 +71,8 @@ module Strategy = struct
       let r = Random.int 4 in
       let xv, yv = List.nth move_vectors r in
       try
-        validate_wall_placement (current_player ()) (x1, y1) (x1 + xv, y1 + yv);
+        validate_wall_placement (current_player ()).walls_left (x1, y1)
+          (x1 + xv, y1 + yv);
         ((x1, y1), (x1 + xv, y1 + yv))
       with
       | InvalidWallPosition _ -> generate_random_wall_pos ()

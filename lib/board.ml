@@ -268,8 +268,8 @@ let will_wall_block_player () =
         move_vectors)
     game_state.players
 
-let validate_wall_placement player pos1 pos2 =
-  if player.walls_left <= 0 then
+let validate_wall_placement walls_left pos1 pos2 =
+  if walls_left <= 0 then
     raise
       (InvalidWallPlacement (pos1, pos2, "Player has no walls left to place"));
 
@@ -305,7 +305,7 @@ let place_wall pos1 pos2 =
   validate_game_in_progress_status ();
 
   let player = current_player () in
-  validate_wall_placement player pos1 pos2;
+  validate_wall_placement player.walls_left pos1 pos2;
 
   let x1, y1 = pos1 in
   let x2, y2 = pos2 in
