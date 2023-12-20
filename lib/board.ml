@@ -35,7 +35,8 @@ let reset_board () =
     done
   done;
   game_state.players <- [];
-  game_state.status <- WaitingToStart
+  game_state.status <- WaitingToStart;
+  game_state.walls_pos <- []
 
 let start_game () =
   let num_players = List.length game_state.players in
