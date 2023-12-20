@@ -23,13 +23,17 @@ let avancer_blue pos lstmv =
 
 (*let can_block_red pos my_pos =
   avancer_red pos (list_of_moves pos) && est_avant_red pos my_pos*)
-let can_block_red pos = 
-  avancer_red pos (list_of_moves pos) && not (is_wall (fst pos, snd pos + 1)) && not (is_wall (fst pos + 1, snd pos + 1))
+let can_block_red pos =
+  avancer_red pos (list_of_moves pos)
+  && (not (is_wall (fst pos, snd pos + 1)))
+  && not (is_wall (fst pos + 1, snd pos + 1))
 
 (*let can_block_blue pos my_pos =
   avancer_blue pos (list_of_moves pos) && est_avant_blue pos my_pos*)
 let can_block_blue pos =
-  avancer_blue pos (list_of_moves pos) && not (is_wall (fst pos, snd pos - 1)) && not (is_wall (fst pos - 1, snd pos - 1))
+  avancer_blue pos (list_of_moves pos)
+  && (not (is_wall (fst pos, snd pos - 1)))
+  && not (is_wall (fst pos - 1, snd pos - 1))
 
 let bot_pos_wall_red pos =
   Placing_wall ((fst pos, snd pos + 1), (fst pos + 1, snd pos + 1))
