@@ -1,6 +1,7 @@
 open Quoridor
 open Quoridor.Types
-(*open Utils*)
+open Quoridor.Board
+open Utils
 
 (* These tests worked well but we can no longer add players one by one so they are commented
 
@@ -461,6 +462,48 @@ let test_game_blocked_player =
       in
       Alcotest.(check bool) "same result" true game)
 
+let reset_board_resets_wall_pos =
+  Alcotest.test_case "reset_board_resets_wall_pos" `Quick (fun () ->
+      let game =
+        let current_turn = ref 0 in
+        let player1 =
+          Engine.create_player
+            (0, Board.board_size / 2)
+            10 Types.Red
+            (fun pos ->
+              if !current_turn = 0 then (
+                current_turn := 1;
+                pos_wall_random ())
+              else Strategy.det_move pos)
+        in
+        let player2 =
+          Engine.create_player
+            (Board.board_size - 1, Board.board_size / 2)
+            10 Types.Green Strategy.det_move
+        in
+        let players = [ player1; player2 ] in
+        Engine.run_game players |> ignore;
+        current_turn := 0;
+        let player1 =
+          Engine.create_player
+            (0, Board.board_size / 2)
+            10 Types.Red
+            (fun pos ->
+              if !current_turn = 0 then
+                if get_all_wall_pos () |> List.length <> 0 then
+                  raise (Failure "reset_board did not reset wall_pos")
+                else (
+                  current_turn := 1;
+                  Strategy.det_move pos)
+              else Strategy.det_move pos)
+        in
+        try
+          let _ = Engine.run_game [ player1; player2 ] in
+          true
+        with _ -> false
+      in
+      Alcotest.(check bool) "same result" true game)
+
 let () =
   let open Alcotest in
   run "Board Tests"
@@ -506,4 +549,5 @@ let () =
           test_list_of_moves_blocked_player;
         ] );
       ("test_game_bot", [ test_game_blocked_player ]);
+      ("test_reset_baord", [ reset_board_resets_wall_pos ]);
     ]
