@@ -1,5 +1,6 @@
 open Quoridor.Engine
 open Quoridor.Types
+open Quoridor.Board
 
 let wrap s player =
   let print () =
