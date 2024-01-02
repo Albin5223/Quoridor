@@ -70,7 +70,7 @@ let () =
        (Array.length players - 1)] random games.
 
     *)
-  let max_games = 5 * Array.length players * (Array.length players - 1) in
+  let max_games = 100 * Array.length players * (Array.length players - 1) in
   for k = 1 to max_games do
     let i = Random.int (Array.length players) in
 
@@ -103,4 +103,9 @@ let () =
     elo |> Array.iter (fun score -> Printf.printf "%d;" score);
     Printf.printf "\n%!"
   done;
-  Printf.eprintf "\n"
+  Printf.eprintf "\n";
+  durations
+  |> Array.iteri (fun i dur ->
+         Printf.eprintf "%s: %.2f sec.\n"
+           (fst players.(i))
+           (dur /. float_of_int games.(i)))
