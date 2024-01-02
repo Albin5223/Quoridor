@@ -261,9 +261,10 @@ let will_wall_block_player () =
       let pos = player.current_position in
       List.for_all
         (fun pos_vect ->
+          (*
           Format.printf "pos: %d,%d"
             (fst pos + fst pos_vect)
-            (snd pos + snd pos_vect);
+            (snd pos + snd pos_vect);*)
           try is_wall (fst pos + fst pos_vect, snd pos + snd pos_vect)
           with InvalidPosition _ -> false)
         move_vectors)

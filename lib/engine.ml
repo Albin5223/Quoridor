@@ -52,10 +52,8 @@ let run_game players =
                player)
   in
   let rec aux () =
-    Board.print_board ();
-    try
-      let winner = Board.winning_player () in
-      Format.printf "Player %s won\n" (color_to_string winner)
+    (* Board.print_board (); *)
+    try Board.winning_player ()
     with NoWinningPlayer _ ->
       Board.play ();
       aux ()
