@@ -1,3 +1,3 @@
-open Quoridor.Types
+open Types
 
 val better_move : position -> move

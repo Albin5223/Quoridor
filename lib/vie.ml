@@ -1,5 +1,5 @@
-open Quoridor.Board
-open Quoridor.Types
+open Board
+open Types
 
 let color_to_final_pos color =
   match color with
