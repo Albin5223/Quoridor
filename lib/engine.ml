@@ -51,17 +51,18 @@ let run_game players =
              create_player (List.nth positions i) walls_left (List.nth colors i)
                player)
   in
-  let rec aux () =
+  let rec aux n =
+    if n > 5000 then failwith "Diverging";
     (* Board.print_board (); *)
     try Board.winning_player ()
     with NoWinningPlayer _ ->
       Board.play ();
-      aux ()
+      aux (n + 1)
   in
   let player_lst = create_lst_of_player players (20 / nb_players) in
   add_players player_lst;
   Board.start_game ();
-  aux ()
+  aux 0
 
 (**This function returns a movement with a position where the player moves based on their current position
     @param pos the player's initial position
