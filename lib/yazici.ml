@@ -61,7 +61,7 @@ type graph = { sommets : position list; aretes : (position * position) list }
 
 (* <<<<<<<<<< All the prints >>>>>>>>>> *)
 
-let print_position position =
+let _print_position position =
   let x, y = position in
   print_string "(";
   print_int x;
@@ -669,11 +669,13 @@ let move_random_if_not_possible (pos : position) (step : position) : move =
   let possible_moves = list_of_moves pos in
   if List.mem step possible_moves then Moving step
   else
+    (*
     let () =
       print_string "\n <<< Servan avoided a wrong move : ";
       print_position step;
       print_string " >>>\n"
     in
+ *)
     move_randomly pos
 
 (**
