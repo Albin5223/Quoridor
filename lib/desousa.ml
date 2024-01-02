@@ -1,6 +1,5 @@
-(* open Quoridor.Engine *)
-open Quoridor.Board
-open Quoridor.Types
+open Board
+open Types
 
 let target_zone player =
   match player.start_position with
