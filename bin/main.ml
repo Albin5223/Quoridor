@@ -1,6 +1,5 @@
 open Quoridor.Engine
 open Quoridor.Types
-open Quoridor.Board
 
 let wrap s player =
   let print () =
@@ -24,6 +23,7 @@ let players =
     wrap "Paris" Quoridor.Paris.my_bot_paris_albin;
     wrap "Cotrez" Quoridor.Cotrez.bot_play;
     wrap "De_sousa" Quoridor.Desousa.strat_ia;
+    wrap "Vie" Quoridor.Vie.better_move;
   |]
 
 let games = Array.init (Array.length players) (fun _ -> 0)
