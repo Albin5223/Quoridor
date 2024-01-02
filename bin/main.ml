@@ -14,7 +14,7 @@ let wrap s player =
 let players =
   [|
     wrap "Quoridor.random" random_player;
-    wrap "Quoridor.random2" random_player;
+    wrap "Benoiton" Quoridor.Benoiton.det_move_lea;
     wrap "Quoridor.random3" random_player;
   |]
 
