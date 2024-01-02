@@ -22,6 +22,7 @@ let players =
     wrap "Servigne" Quoridor.Servigne.my_strategie;
     wrap "Paris" Quoridor.Paris.my_bot_paris_albin;
     wrap "Cotrez" Quoridor.Cotrez.bot_play;
+    wrap "De_sousa" Quoridor.Desousa.strat_ia;
   |]
 
 let games = Array.init (Array.length players) (fun _ -> 0)
