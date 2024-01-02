@@ -20,6 +20,7 @@ let players =
     wrap "Iglesias_Vasquez" Quoridor.Iglesias.bot_yago;
     wrap "Yazici" Quoridor.Yazici.bot_yazici_servan;
     wrap "Servigne" Quoridor.Servigne.my_strategie;
+    wrap "Paris" Quoridor.Paris.my_bot_paris_albin;
   |]
 
 let games = Array.init (Array.length players) (fun _ -> 0)
@@ -65,7 +66,7 @@ let () =
        (Array.length players - 1)] random games.
 
     *)
-  let max_games = 10 * Array.length players * (Array.length players - 1) in
+  let max_games = 5 * Array.length players * (Array.length players - 1) in
   for k = 1 to max_games do
     let i = Random.int (Array.length players) in
 
