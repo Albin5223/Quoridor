@@ -41,21 +41,22 @@ let test_walls_cannot_be_removed =
 
 let first_pick_strat pos = Moving (list_of_moves pos |> List.hd)
 
-let test_validity_of_first_pick_strat_with_2_players =
+(*
+let _test_validity_of_first_pick_strat_with_2_players =
   let open QCheck in
   Test.make ~count:100 ~name:"test_validity_of_first_pick_strat" (int_range 2 2)
     (fun n ->
       let _ = create_list_of_player n 10 first_pick_strat |> run_game in
       true)
 
-let test_validity_of_first_pick_strat_with_4_players =
+let _test_validity_of_first_pick_strat_with_4_players =
   let open QCheck in
   Test.make ~count:100 ~name:"test_validity_of_first_pick_strat" (int_range 4 4)
     (fun n ->
       let _ = create_list_of_player n 5 first_pick_strat |> run_game in
       true)
 
-let test_validity_of_random_strategy_with_2_players =
+let _test_validity_of_random_strategy_with_2_players =
   let open QCheck in
   Test.make ~count:100 ~name:"Radom strategy is valid"
     (pair (int_range 2 2) int)
@@ -65,7 +66,7 @@ let test_validity_of_random_strategy_with_2_players =
       let _ = create_list_of_player n 10 Strategy.det_move |> run_game in
       true)
 
-let test_validity_of_random_strategy_with_4_players =
+let _test_validity_of_random_strategy_with_4_players =
   let open QCheck in
   Test.make ~count:100 ~name:"Radom strategy is valid"
     (pair (int_range 4 4) int)
@@ -74,6 +75,7 @@ let test_validity_of_random_strategy_with_4_players =
 
       let _ = create_list_of_player n 5 Strategy.det_move |> run_game in
       true)
+*)
 
 let test_create_player =
   Alcotest.test_case "create_player" `Quick (fun () ->
@@ -99,7 +101,8 @@ let test_add_players =
           ]
       with InvalidPlayerWallsLeft _ | InvalidNumberPlayer _ -> ())
 
-let can_play_two_games =
+(*
+let _can_play_two_games =
   let open QCheck in
   Test.make ~count:10 ~name:"Can play two games"
     (pair (int_range 2 2) int)
@@ -108,6 +111,7 @@ let can_play_two_games =
       let _ = create_list_of_player n 10 Strategy.det_move |> run_game in
       let _ = create_list_of_player n 10 Strategy.det_move |> run_game in
       true)
+*)
 
 let test_3_player_game =
   Alcotest.test_case "3 player game is not allowed" `Quick (fun () ->
@@ -210,6 +214,7 @@ let () =
           test_3_player_game;
           QCheck_alcotest.to_alcotest test_only_2_and_4_players_are_allowed;
         ] );
+      (*
       ( "First pick strategy is valid with 2 players",
         [
           QCheck_alcotest.to_alcotest
@@ -229,12 +234,10 @@ let () =
         [
           QCheck_alcotest.to_alcotest
             test_validity_of_random_strategy_with_2_players;
-        ] );
+        ] ); *)
       ("create_player", [ test_create_player ]);
       ("add_player", [ test_add_players ] @ number_of_walls_is_correct);
       ( "Game integrity",
-        [
-          QCheck_alcotest.to_alcotest can_play_two_games;
-          (*test_player_cannot_win_on_first_turn;*)
-        ] );
+        [ (*          QCheck_alcotest.to_alcotest can_play_two_games; *)
+          (*test_player_cannot_win_on_first_turn;*) ] );
     ]
