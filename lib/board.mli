@@ -13,6 +13,8 @@ val board_size : int
 val move_vectors : (int * int) list
 (** The list of possible move directions for a player. *)
 
+val reset_board : unit -> unit
+
 val start_game : unit -> unit
 (** Starts the game.
     @raise InvalidNumberPlayer if the number of players is neither two nor four.

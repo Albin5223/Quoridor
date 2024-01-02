@@ -76,6 +76,9 @@ let () =
     let pj, player_j = players.(j) in
     let score_i, score_j =
       try
+        (* <HACK> *)
+        Quoridor.Board.reset_board ();
+        (* </HACK> *)
         let t = Sys.time () in
         let winner = run_game [ player_i; player_j ] in
         let t' = Sys.time () in
