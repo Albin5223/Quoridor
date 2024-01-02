@@ -15,7 +15,7 @@ let players =
   [|
     wrap "Quoridor.random" random_player;
     wrap "Benoiton" Quoridor.Benoiton.det_move_lea;
-    wrap "Quoridor.random3" random_player;
+    wrap "Dudillieu" Quoridor.Dudillieu.det_move_gabin_bot;
   |]
 
 let games = Array.init (Array.length players) (fun _ -> 0)
