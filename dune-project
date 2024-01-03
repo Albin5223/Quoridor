@@ -17,5 +17,5 @@
  (name quoridor)
  (synopsis "Quoridor Game")
  (description "Implementation of Quoridor Game in OCaml")
- (depends ocaml dune alcotest qcheck qcheck-alcotest))
+ (depends (ocaml (>= 4.13)) dune alcotest qcheck qcheck-alcotest))
 

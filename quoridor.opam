@@ -6,7 +6,7 @@ maintainer: ["Ali Eljamai, Mathaui Yves Abdorohmang"]
 authors: ["Evan Joffrin"]
 license: "LICENSE"
 depends: [
-  "ocaml"
+  "ocaml" {>= "4.13"}
   "dune" {>= "3.11"}
   "alcotest"
   "qcheck"
